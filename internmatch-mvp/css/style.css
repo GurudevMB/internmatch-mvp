@@ -26,6 +26,12 @@ nav{
 .logo{
     font-size:30px;
     font-weight:700;
+    color:white;
+    text-decoration:none;
+}
+
+.logo span{
+    color:#38bdf8;
 }
 
 .logo span{
