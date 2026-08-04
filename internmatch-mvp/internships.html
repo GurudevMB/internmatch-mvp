@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internships | InternMatch</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/internships.css">
+</head>
+<body>
+
+<nav>
+
+    <a href="index.html" class="logo">
+        Intern<span>Match</span>
+    </a>
+
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="internships.html">Internships</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="login.html">Logout</a></li>
+    </ul>
+
+</nav>
+
+<section class="internships-page">
+
+    <h1>Available Internships</h1>
+
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="Search internships...">
+
+    <div class="internship-list">
+
+        <div class="internship-card">
+            <h2>Frontend Developer</h2>
+            <p>Google</p>
+            <span>Bangalore | ₹20,000/month</span>
+            <button onclick="applyInternship()">Apply</button>
+        </div>
+
+        <div class="internship-card">
+            <h2>Python Developer</h2>
+            <p>Amazon</p>
+            <span>Chennai | ₹25,000/month</span>
+            <button onclick="applyInternship()">Apply</button>
+        </div>
+
+        <div class="internship-card">
+            <h2>UI/UX Designer</h2>
+            <p>Microsoft</p>
+            <span>Hyderabad | ₹18,000/month</span>
+            <button onclick="applyInternship()">Apply</button>
+        </div>
+
+        <div class="internship-card">
+            <h2>Data Analyst</h2>
+            <p>TCS</p>
+            <span>Coimbatore | ₹15,000/month</span>
+            <button onclick="applyInternship()">Apply</button>
+        </div>
+
+        <div class="internship-card">
+            <h2>AI/ML Intern</h2>
+            <p>Infosys</p>
+            <span>Pune | ₹22,000/month</span>
+            <button onclick="applyInternship()">Apply</button>
+        </div>
+
+    </div>
+
+</section>
+
+<script src="js/internships.js"></script>
+
+</body>
+</html>
