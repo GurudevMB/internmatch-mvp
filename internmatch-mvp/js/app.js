@@ -1,25 +1,45 @@
-const email = localStorage.getItem("userEmail");
+// Check Login Status
+const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-const userEmail = document.getElementById("userEmail");
-const userName = document.getElementById("userName");
-const avatar = document.getElementById("avatar");
+// Logout Button
+const logoutLink = document.getElementById("logoutLink");
 
-if(email){
+if (logoutLink) {
 
-    userEmail.textContent = email;
+    logoutLink.addEventListener("click", function (e) {
 
-    const name = email.split("@")[0];
+        e.preventDefault();
 
-    userName.textContent =
-        name.charAt(0).toUpperCase() + name.slice(1);
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userEmail");
 
-    avatar.textContent =
-        name.charAt(0).toUpperCase();
+        window.location.href = "index.html";
+
+    });
 
 }
 
-document.getElementById("editBtn").addEventListener("click",function(){
+// Login Button
+const loginLink = document.getElementById("loginLink");
 
-    alert("Edit Profile feature will be available in Version 2.0 🚀");
+if (isLoggedIn === "true") {
 
-});
+    if (loginLink) {
+        loginLink.style.display = "none";
+    }
+
+    if (logoutLink) {
+        logoutLink.style.display = "inline-block";
+    }
+
+} else {
+
+    if (loginLink) {
+        loginLink.style.display = "inline-block";
+    }
+
+    if (logoutLink) {
+        logoutLink.style.display = "none";
+    }
+
+}

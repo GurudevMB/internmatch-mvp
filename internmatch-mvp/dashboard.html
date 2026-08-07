@@ -28,28 +28,28 @@
 
 <section class="dashboard">
 
-    <h1>Welcome, Student 👋</h1>
+   <h1 id="welcomeUser">Welcome 👋</h1>
 
     <p>Track your internship journey from one place.</p>
 
-    <div class="stats">
+<div class="stats">
 
-        <div class="card">
-            <h2>10</h2>
-            <p>Available Internships</p>
-        </div>
-
-        <div class="card">
-            <h2>0</h2>
-            <p>Applied</p>
-        </div>
-
-        <div class="card">
-            <h2>0</h2>
-            <p>Saved</p>
-        </div>
-
+   <div class="card">
+        <h2 id="availableCount">0</h2>
+        <p>Available Internships</p>
     </div>
+
+    <div class="card">
+        <h2 id="appliedCount">0</h2>
+        <p>Applied</p>
+    </div>
+
+    <div class="card">
+        <h2 id="savedCount">0</h2>
+        <p>Saved</p>
+    </div>
+
+</div>
 
     <button onclick="location.href='internships.html'">
         Browse Internships
@@ -57,7 +57,8 @@
 
 </section>
 
-<script src="js/dashboard.js"></script>
+
 <script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
 </body>
 </html>

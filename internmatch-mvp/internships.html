@@ -7,7 +7,16 @@
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/internships.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
+
 <body>
 
 <nav>
@@ -37,45 +46,108 @@
     <div class="internship-list">
 
         <div class="internship-card">
+
             <h2>Frontend Developer</h2>
+
             <p>Google</p>
-            <span>Bangalore | ₹20,000/month</span>
-            <button onclick="applyInternship()">Apply</button>
+
+            <span>Bangalore | ₹20,000 / month</span>
+
+            <button onclick="applyInternship('frontend')">
+                Apply
+            </button>
+
+            <button onclick="saveInternship('frontend')">
+                ⭐ Save
+            </button>
+
         </div>
 
         <div class="internship-card">
+
             <h2>Python Developer</h2>
+
             <p>Amazon</p>
-            <span>Chennai | ₹25,000/month</span>
-            <button onclick="applyInternship()">Apply</button>
+
+            <span>Chennai | ₹25,000 / month</span>
+
+            <button onclick="applyInternship('python')">
+                Apply
+            </button>
+
+            <button onclick="saveInternship('python')">
+                ⭐ Save
+            </button>
+
         </div>
 
         <div class="internship-card">
-            <h2>UI/UX Designer</h2>
+
+            <h2>UI / UX Designer</h2>
+
             <p>Microsoft</p>
-            <span>Hyderabad | ₹18,000/month</span>
-            <button onclick="applyInternship()">Apply</button>
-        </div>
 
-        <div class="internship-card">
+            <span>Hyderabad | ₹18,000 / month</span>
+
+            <button onclick="applyInternship('uiux')">
+                Apply
+            </button>
+
+            <button onclick="saveInternship('uiux')">
+                ⭐ Save
+            </button>
+
+        </div>
+                <div class="internship-card">
+
             <h2>Data Analyst</h2>
+
             <p>TCS</p>
-            <span>Coimbatore | ₹15,000/month</span>
-            <button onclick="applyInternship()">Apply</button>
+
+            <span>Coimbatore | ₹15,000 / month</span>
+
+            <button onclick="applyInternship('data')">
+                Apply
+            </button>
+
+            <button onclick="saveInternship('data')">
+                ⭐ Save
+            </button>
+
         </div>
 
         <div class="internship-card">
-            <h2>AI/ML Intern</h2>
+
+            <h2>AI / ML Intern</h2>
+
             <p>Infosys</p>
-            <span>Pune | ₹22,000/month</span>
-            <button onclick="applyInternship()">Apply</button>
+
+            <span>Pune | ₹22,000 / month</span>
+
+            <button onclick="applyInternship('aiml')">
+                Apply
+            </button>
+
+            <button onclick="saveInternship('aiml')">
+                ⭐ Save
+            </button>
+
         </div>
 
     </div>
 
 </section>
 
+<footer>
+
+    <p>
+        © 2026 InternMatch. All Rights Reserved.
+    </p>
+
+</footer>
+
 <script src="js/internships.js"></script>
 <script src="js/app.js"></script>
+
 </body>
 </html>
