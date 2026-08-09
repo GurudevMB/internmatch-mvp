@@ -72,4 +72,4 @@ InternMatch is a frontend-based internship discovery platform designed to help s
                            │
                     ┌──────▼──────┐
                     │    Logout   │
-                    └─────────────┘
+                    └─────────────┘   s
