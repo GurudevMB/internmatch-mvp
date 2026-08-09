@@ -3,7 +3,10 @@
 const totalInternships =
     document.querySelectorAll(".internship-card").length;
 
-localStorage.setItem("availableCount", totalInternships);
+localStorage.setItem(
+    "availableCount",
+    totalInternships
+);
 
 
 // ================= APPLY / UNAPPLY =================
@@ -14,53 +17,74 @@ function applyInternship(id) {
         JSON.parse(localStorage.getItem("appliedInternships")) || [];
 
 
-    // UNAPPLY
+    // ================= UNAPPLY =================
+
     if (applied.includes(id)) {
 
-        applied = applied.filter(item => item !== id);
+        applied = applied.filter(
+            item => item !== id
+        );
+
 
         localStorage.setItem(
             "appliedInternships",
             JSON.stringify(applied)
         );
 
+
         localStorage.setItem(
             "appliedCount",
             applied.length
         );
 
-        const btn = document.getElementById("apply-" + id);
+
+        const btn =
+            document.getElementById("apply-" + id);
+
 
         if (btn) {
             btn.innerText = "Apply";
         }
 
-        alert("❌ Application Removed Successfully!");
+
+        alert(
+            "❌ Application Removed Successfully!"
+        );
+
 
         return;
     }
 
 
-    // APPLY
+    // ================= APPLY =================
+
     applied.push(id);
+
 
     localStorage.setItem(
         "appliedInternships",
         JSON.stringify(applied)
     );
 
+
     localStorage.setItem(
         "appliedCount",
         applied.length
     );
 
-    const btn = document.getElementById("apply-" + id);
+
+    const btn =
+        document.getElementById("apply-" + id);
+
 
     if (btn) {
         btn.innerText = "✅ Applied";
     }
 
-    alert("✅ Application Submitted Successfully!");
+
+    alert(
+        "✅ Application Submitted Successfully!"
+    );
 }
 
 
@@ -72,53 +96,74 @@ function saveInternship(id) {
         JSON.parse(localStorage.getItem("savedInternships")) || [];
 
 
-    // UNSAVE
+    // ================= UNSAVE =================
+
     if (saved.includes(id)) {
 
-        saved = saved.filter(item => item !== id);
+        saved = saved.filter(
+            item => item !== id
+        );
+
 
         localStorage.setItem(
             "savedInternships",
             JSON.stringify(saved)
         );
 
+
         localStorage.setItem(
             "savedCount",
             saved.length
         );
 
-        const btn = document.getElementById("save-" + id);
+
+        const btn =
+            document.getElementById("save-" + id);
+
 
         if (btn) {
             btn.innerText = "⭐ Save";
         }
 
-        alert("❌ Internship Removed from Saved!");
+
+        alert(
+            "❌ Internship Removed from Saved!"
+        );
+
 
         return;
     }
 
 
-    // SAVE
+    // ================= SAVE =================
+
     saved.push(id);
+
 
     localStorage.setItem(
         "savedInternships",
         JSON.stringify(saved)
     );
 
+
     localStorage.setItem(
         "savedCount",
         saved.length
     );
 
-    const btn = document.getElementById("save-" + id);
+
+    const btn =
+        document.getElementById("save-" + id);
+
 
     if (btn) {
         btn.innerText = "★ Saved";
     }
 
-    alert("⭐ Internship Saved Successfully!");
+
+    alert(
+        "⭐ Internship Saved Successfully!"
+    );
 }
 
 
@@ -129,6 +174,7 @@ function setupSearch() {
     const searchInput =
         document.getElementById("searchInput");
 
+
     const internshipCards =
         document.querySelectorAll(".internship-card");
 
@@ -138,36 +184,70 @@ function setupSearch() {
     }
 
 
-    searchInput.addEventListener("input", function () {
+    searchInput.addEventListener(
+        "input",
+        function () {
 
-        const searchText = this.value
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, " ");
-
-
-        internshipCards.forEach(function (card) {
-
-            const cardText =
-                card.textContent
+            const searchText =
+                this.value
                     .toLowerCase()
                     .trim()
                     .replace(/\s+/g, " ");
 
 
-            if (cardText.includes(searchText)) {
+            internshipCards.forEach(
+                function (card) {
 
-                card.style.display = "";
+                    const cardText =
+                        card.textContent
+                            .toLowerCase()
+                            .trim()
+                            .replace(/\s+/g, " ");
 
-            } else {
 
-                card.style.display = "none";
+                    if (
+                        cardText.includes(searchText)
+                    ) {
 
-            }
+                        card.style.display = "";
 
-        });
+                    } else {
 
-    });
+                        card.style.display = "none";
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    // ================= SEARCH FROM HOME PAGE =================
+
+    const urlParams =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const searchQuery =
+        urlParams.get("search");
+
+
+    if (searchQuery) {
+
+        searchInput.value =
+            searchQuery;
+
+
+        searchInput.dispatchEvent(
+            new Event("input")
+        );
+
+    }
+
 }
 
 
@@ -176,43 +256,76 @@ function setupSearch() {
 function loadButtonStates() {
 
     let applied =
-        JSON.parse(localStorage.getItem("appliedInternships")) || [];
+        JSON.parse(
+            localStorage.getItem(
+                "appliedInternships"
+            )
+        ) || [];
+
 
     let saved =
-        JSON.parse(localStorage.getItem("savedInternships")) || [];
+        JSON.parse(
+            localStorage.getItem(
+                "savedInternships"
+            )
+        ) || [];
 
 
-    applied.forEach(function (id) {
+    // ================= APPLIED BUTTONS =================
 
-        const btn =
-            document.getElementById("apply-" + id);
+    applied.forEach(
+        function (id) {
 
-        if (btn) {
-            btn.innerText = "✅ Applied";
+            const btn =
+                document.getElementById(
+                    "apply-" + id
+                );
+
+
+            if (btn) {
+
+                btn.innerText =
+                    "✅ Applied";
+
+            }
+
         }
+    );
 
-    });
+
+    // ================= SAVED BUTTONS =================
+
+    saved.forEach(
+        function (id) {
+
+            const btn =
+                document.getElementById(
+                    "save-" + id
+                );
 
 
-    saved.forEach(function (id) {
+            if (btn) {
 
-        const btn =
-            document.getElementById("save-" + id);
+                btn.innerText =
+                    "★ Saved";
 
-        if (btn) {
-            btn.innerText = "★ Saved";
+            }
+
         }
+    );
 
-    });
 }
 
 
 // ================= PAGE LOAD =================
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    loadButtonStates();
+        loadButtonStates();
 
-    setupSearch();
+        setupSearch();
 
-});
+    }
+);

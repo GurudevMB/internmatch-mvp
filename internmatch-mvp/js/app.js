@@ -1,8 +1,37 @@
-// Check Login Status
-const isLoggedIn = localStorage.getItem("isLoggedIn");
+// ================= LOGIN STATUS =================
 
-// Logout Button
-const logoutLink = document.getElementById("logoutLink");
+const isLoggedIn =
+    localStorage.getItem("isLoggedIn");
+
+
+// ================= LOGIN PROTECTION =================
+
+const currentPage =
+    window.location.pathname.split("/").pop();
+
+
+const protectedPages = [
+    "dashboard.html",
+    "internships.html",
+    "profile.html"
+];
+
+
+if (
+    protectedPages.includes(currentPage) &&
+    isLoggedIn !== "true"
+) {
+
+    window.location.href = "index.html";
+
+}
+
+
+// ================= LOGOUT BUTTON =================
+
+const logoutLink =
+    document.getElementById("logoutLink");
+
 
 if (logoutLink) {
 
@@ -10,8 +39,13 @@ if (logoutLink) {
 
         e.preventDefault();
 
+
         localStorage.removeItem("isLoggedIn");
+
         localStorage.removeItem("userEmail");
+
+        localStorage.removeItem("profileName");
+
 
         window.location.href = "index.html";
 
@@ -19,14 +53,19 @@ if (logoutLink) {
 
 }
 
-// Login Button
-const loginLink = document.getElementById("loginLink");
+
+// ================= LOGIN BUTTON =================
+
+const loginLink =
+    document.getElementById("loginLink");
+
 
 if (isLoggedIn === "true") {
 
     if (loginLink) {
         loginLink.style.display = "none";
     }
+
 
     if (logoutLink) {
         logoutLink.style.display = "inline-block";
@@ -37,6 +76,7 @@ if (isLoggedIn === "true") {
     if (loginLink) {
         loginLink.style.display = "inline-block";
     }
+
 
     if (logoutLink) {
         logoutLink.style.display = "none";
