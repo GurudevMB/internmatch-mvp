@@ -1,0 +1,126 @@
+/* ================= SIGNUP PAGE ================= */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* ================= SIGNUP CARD ================= */
+
+.login-card {
+    width: 430px;
+    max-width: 90%;
+    padding: 35px 40px;
+    background: #1e293b;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+
+/* ================= HEADING ================= */
+
+.login-card h2 {
+    text-align: center;
+    margin-bottom: 8px;
+    color: white;
+}
+
+
+.login-card > p {
+    text-align: center;
+    color: white;
+    margin-bottom: 25px;
+}
+
+
+/* ================= FORM ================= */
+
+#signupForm {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ================= LABEL ================= */
+
+#signupForm label {
+    color: white;
+    margin-bottom: 7px;
+    font-weight: 500;
+}
+
+
+/* ================= INPUT ================= */
+
+#signupForm input {
+    width: 100%;
+    padding: 13px 14px;
+    margin-bottom: 17px;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 14px;
+    box-sizing: border-box;
+
+    outline: none;
+}
+
+
+/* ================= INPUT FOCUS ================= */
+
+#signupForm input:focus {
+    outline: 2px solid #38bdf8;
+}
+
+
+/* ================= CREATE ACCOUNT BUTTON ================= */
+
+#signupForm button {
+    width: 100%;
+    padding: 13px;
+
+    margin-top: 5px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #38bdf8;
+    color: white;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+
+#signupForm button:hover {
+    background: #0ea5e9;
+}
+
+
+/* ================= LOGIN LINK ================= */
+
+.signup-text {
+    text-align: center;
+    margin-top: 20px;
+    color: white;
+}
+
+
+.signup-text a {
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+
+.signup-text a:hover {
+    text-decoration: underline;
+}

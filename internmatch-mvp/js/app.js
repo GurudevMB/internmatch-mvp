@@ -4,11 +4,13 @@ const isLoggedIn =
     localStorage.getItem("isLoggedIn");
 
 
-// ================= LOGIN PROTECTION =================
+// ================= CURRENT PAGE =================
 
 const currentPage =
     window.location.pathname.split("/").pop();
 
+
+// ================= PROTECTED PAGES =================
 
 const protectedPages = [
     "dashboard.html",
@@ -16,6 +18,8 @@ const protectedPages = [
     "profile.html"
 ];
 
+
+// ================= LOGIN PROTECTION =================
 
 if (
     protectedPages.includes(currentPage) &&
@@ -40,12 +44,14 @@ if (logoutLink) {
         e.preventDefault();
 
 
+        // Clear login session
+
         localStorage.removeItem("isLoggedIn");
-
         localStorage.removeItem("userEmail");
-
         localStorage.removeItem("profileName");
 
+
+        // Go to home page
 
         window.location.href = "index.html";
 
@@ -62,10 +68,14 @@ const loginLink =
 
 if (isLoggedIn === "true") {
 
+    // Logged in → hide Login
+
     if (loginLink) {
         loginLink.style.display = "none";
     }
 
+
+    // Logged in → show Logout
 
     if (logoutLink) {
         logoutLink.style.display = "inline-block";
@@ -73,10 +83,14 @@ if (isLoggedIn === "true") {
 
 } else {
 
+    // Logged out → show Login
+
     if (loginLink) {
         loginLink.style.display = "inline-block";
     }
 
+
+    // Logged out → hide Logout
 
     if (logoutLink) {
         logoutLink.style.display = "none";

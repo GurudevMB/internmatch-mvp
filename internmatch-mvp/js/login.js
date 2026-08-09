@@ -1,120 +1,116 @@
+// ================= LOGIN =================
+
 const loginForm = document.getElementById("loginForm");
+
 
 if (loginForm) {
 
-    loginForm.addEventListener("submit", function (event) {
+    loginForm.addEventListener(
+        "submit",
+        function (event) {
 
-        event.preventDefault();
-
-
-        const email =
-            document.getElementById("email").value.trim();
-
-        const password =
-            document.getElementById("password").value;
+            event.preventDefault();
 
 
-        // ================= EMPTY FIELD CHECK =================
+            // ================= GET VALUES =================
 
-        if (email === "" || password === "") {
-
-            alert("Please fill all fields.");
-
-            return;
-        }
-
-
-        // ================= EMAIL VALIDATION =================
-
-        const emailPattern =
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const email =
+                document.getElementById("email")
+                    .value
+                    .trim()
+                    .toLowerCase();
 
 
-        if (!emailPattern.test(email)) {
-
-            alert("Please enter a valid email address.");
-
-            return;
-        }
+            const password =
+                document.getElementById("password")
+                    .value;
 
 
-        // ================= PASSWORD VALIDATION =================
+            // ================= EMPTY CHECK =================
 
-        if (password.length < 8) {
+            if (email === "" || password === "") {
 
-            alert("Password must contain at least 8 characters.");
+                alert("Please fill all fields.");
 
-            return;
-        }
+                return;
+            }
 
 
-        if (!/[A-Z]/.test(password)) {
+            // ================= GET REGISTERED USER =================
 
-            alert(
-                "Password must contain at least one uppercase letter."
+            const savedUser =
+                JSON.parse(
+                    localStorage.getItem("internMatchUser")
+                );
+
+
+            // ================= NO ACCOUNT =================
+
+            if (!savedUser) {
+
+                alert(
+                    "No account found. Please create an account first."
+                );
+
+                return;
+            }
+
+
+            // ================= EMAIL CHECK =================
+
+            if (email !== savedUser.email) {
+
+                alert(
+                    "❌ Invalid email or password."
+                );
+
+                return;
+            }
+
+
+            // ================= PASSWORD CHECK =================
+
+            if (password !== savedUser.password) {
+
+                alert(
+                    "❌ Invalid email or password."
+                );
+
+                return;
+            }
+
+
+            // ================= LOGIN SUCCESS =================
+
+            localStorage.setItem(
+                "isLoggedIn",
+                "true"
             );
 
-            return;
-        }
 
-
-        if (!/[a-z]/.test(password)) {
-
-            alert(
-                "Password must contain at least one lowercase letter."
+            localStorage.setItem(
+                "userEmail",
+                savedUser.email
             );
 
-            return;
-        }
 
-
-        if (!/[0-9]/.test(password)) {
-
-            alert(
-                "Password must contain at least one number."
+            localStorage.setItem(
+                "profileName",
+                savedUser.name
             );
 
-            return;
-        }
-
-
-        if (!/[!@#$%^&*]/.test(password)) {
 
             alert(
-                "Password must contain at least one special character."
+                "✅ Login Successful! Welcome to InternMatch."
             );
 
-            return;
+
+            // ================= DASHBOARD =================
+
+            window.location.href =
+                "dashboard.html";
+
         }
-
-
-        if (/\s/.test(password)) {
-
-            alert("Password must not contain spaces.");
-
-            return;
-        }
-
-
-        // ================= SAVE LOGIN STATE =================
-
-        localStorage.setItem(
-            "isLoggedIn",
-            "true"
-        );
-
-
-        localStorage.setItem(
-            "userEmail",
-            email
-        );
-
-
-        // ================= REDIRECT =================
-
-        window.location.href =
-            "dashboard.html";
-
-    });
+    );
 
 }
