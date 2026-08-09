@@ -1,6 +1,7 @@
 // ================= AVAILABLE COUNT =================
 
-const totalInternships = document.querySelectorAll(".internship-card").length;
+const totalInternships =
+    document.querySelectorAll(".internship-card").length;
 
 localStorage.setItem("availableCount", totalInternships);
 
@@ -18,25 +19,21 @@ function applyInternship(id) {
 
         applied = applied.filter(item => item !== id);
 
-
         localStorage.setItem(
             "appliedInternships",
             JSON.stringify(applied)
         );
-
 
         localStorage.setItem(
             "appliedCount",
             applied.length
         );
 
-
-        let btn = document.getElementById("apply-" + id);
+        const btn = document.getElementById("apply-" + id);
 
         if (btn) {
             btn.innerText = "Apply";
         }
-
 
         alert("❌ Application Removed Successfully!");
 
@@ -45,33 +42,26 @@ function applyInternship(id) {
 
 
     // APPLY
-
     applied.push(id);
-
 
     localStorage.setItem(
         "appliedInternships",
         JSON.stringify(applied)
     );
 
-
     localStorage.setItem(
         "appliedCount",
         applied.length
     );
 
-
-    let btn = document.getElementById("apply-" + id);
+    const btn = document.getElementById("apply-" + id);
 
     if (btn) {
         btn.innerText = "✅ Applied";
     }
 
-
     alert("✅ Application Submitted Successfully!");
-
 }
-
 
 
 // ================= SAVE / UNSAVE =================
@@ -83,30 +73,25 @@ function saveInternship(id) {
 
 
     // UNSAVE
-
     if (saved.includes(id)) {
 
         saved = saved.filter(item => item !== id);
-
 
         localStorage.setItem(
             "savedInternships",
             JSON.stringify(saved)
         );
 
-
         localStorage.setItem(
             "savedCount",
             saved.length
         );
 
-
-        let btn = document.getElementById("save-" + id);
+        const btn = document.getElementById("save-" + id);
 
         if (btn) {
             btn.innerText = "⭐ Save";
         }
-
 
         alert("❌ Internship Removed from Saved!");
 
@@ -115,52 +100,92 @@ function saveInternship(id) {
 
 
     // SAVE
-
     saved.push(id);
-
 
     localStorage.setItem(
         "savedInternships",
         JSON.stringify(saved)
     );
 
-
     localStorage.setItem(
         "savedCount",
         saved.length
     );
 
-
-    let btn = document.getElementById("save-" + id);
+    const btn = document.getElementById("save-" + id);
 
     if (btn) {
         btn.innerText = "★ Saved";
     }
 
-
     alert("⭐ Internship Saved Successfully!");
-
 }
 
 
+// ================= SEARCH =================
 
-// ================= LOAD SAVED STATE =================
+function setupSearch() {
 
-document.addEventListener("DOMContentLoaded", () => {
+    const searchInput =
+        document.getElementById("searchInput");
 
+    const internshipCards =
+        document.querySelectorAll(".internship-card");
+
+
+    if (!searchInput) {
+        return;
+    }
+
+
+    searchInput.addEventListener("input", function () {
+
+        const searchText = this.value
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, " ");
+
+
+        internshipCards.forEach(function (card) {
+
+            const cardText =
+                card.textContent
+                    .toLowerCase()
+                    .trim()
+                    .replace(/\s+/g, " ");
+
+
+            if (cardText.includes(searchText)) {
+
+                card.style.display = "";
+
+            } else {
+
+                card.style.display = "none";
+
+            }
+
+        });
+
+    });
+}
+
+
+// ================= LOAD SAVED / APPLIED STATE =================
+
+function loadButtonStates() {
 
     let applied =
         JSON.parse(localStorage.getItem("appliedInternships")) || [];
-
 
     let saved =
         JSON.parse(localStorage.getItem("savedInternships")) || [];
 
 
+    applied.forEach(function (id) {
 
-    applied.forEach(id => {
-
-        let btn = document.getElementById("apply-" + id);
+        const btn =
+            document.getElementById("apply-" + id);
 
         if (btn) {
             btn.innerText = "✅ Applied";
@@ -169,16 +194,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
+    saved.forEach(function (id) {
 
-    saved.forEach(id => {
-
-        let btn = document.getElementById("save-" + id);
+        const btn =
+            document.getElementById("save-" + id);
 
         if (btn) {
             btn.innerText = "★ Saved";
         }
 
     });
+}
 
+
+// ================= PAGE LOAD =================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    loadButtonStates();
+
+    setupSearch();
 
 });
