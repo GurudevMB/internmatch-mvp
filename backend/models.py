@@ -33,3 +33,19 @@ class Internship(Base):
     duration = Column(String(100))
     stipend = Column(String(100))
     skills_required = Column(Text)
+
+
+class Application(Base):
+    __tablename__ = "applications"
+
+    application_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    internship_id = Column(Integer, nullable=False)
+    status = Column(String(50), nullable=False, default="Applied")
+
+class SavedInternship(Base):
+    __tablename__ = "saved_internships"
+
+    saved_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    internship_id = Column(Integer, nullable=False)

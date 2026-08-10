@@ -42,3 +42,30 @@ class InternshipResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class ApplicationCreate(BaseModel):
+    user_id: int
+    internship_id: int
+
+
+class ApplicationResponse(BaseModel):
+    application_id: int
+    user_id: int
+    internship_id: int
+    status: str
+
+    class Config:
+        from_attributes = True
+
+class SavedInternshipCreate(BaseModel):
+    user_id: int
+    internship_id: int
+
+
+class SavedInternshipResponse(BaseModel):
+    saved_id: int
+    user_id: int
+    internship_id: int
+
+    class Config:
+        from_attributes = True

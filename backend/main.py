@@ -1,17 +1,30 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from database import SessionLocal
-from models import User, Company, Internship
+from database import SessionLocal, Base, engine
+from models import (
+    User,
+    Company,
+    Internship,
+    Application,
+    SavedInternship
+)
+
 from schemas import (
     UserCreate,
     CompanyCreate,
     InternshipCreate,
     InternshipResponse,
-    LoginRequest
+    LoginRequest,
+    ApplicationCreate,
+    ApplicationResponse,
+    SavedInternshipCreate,
+    SavedInternshipResponse
 )
+
 from datetime import datetime, timedelta
 from jose import jwt
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 app.add_middleware(
@@ -239,3 +252,97 @@ def create_internship(internship: InternshipCreate):
     db.close()
 
     return new_internship
+
+
+# ---------------- APPLICATIONS ----------------
+
+@app.post("/applications", response_model=ApplicationResponse)
+def create_application(application: ApplicationCreate):
+    db = SessionLocal()
+
+    new_application = Application(
+        user_id=application.user_id,
+        internship_id=application.internship_id,
+        status="Applied"
+    )
+
+    db.add(new_application)
+    db.commit()
+    db.refresh(new_application)
+
+    db.close()
+
+    return new_application
+
+
+@app.get("/applications", response_model=list[ApplicationResponse])
+def get_applications():
+    db = SessionLocal()
+
+    applications = db.query(Application).all()
+
+    db.close()
+
+    return applications
+
+
+@app.post(
+    "/saved-internships",
+    response_model=SavedInternshipResponse
+)
+def save_internship(data: SavedInternshipCreate):
+
+    db = SessionLocal()
+
+    existing = db.query(SavedInternship).filter(
+        SavedInternship.user_id == data.user_id,
+        SavedInternship.internship_id == data.internship_id
+    ).first()
+
+    if existing:
+        db.close()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Internship already saved"
+        )
+
+    saved = SavedInternship(
+        user_id=data.user_id,
+        internship_id=data.internship_id
+    )
+
+    db.add(saved)
+    db.commit()
+    db.refresh(saved)
+
+    db.close()
+
+    return saved 
+
+@app.delete("/saved-internships/{user_id}/{internship_id}")
+def unsave_internship(user_id: int, internship_id: int):
+
+    db = SessionLocal()
+
+    saved = db.query(SavedInternship).filter(
+        SavedInternship.user_id == user_id,
+        SavedInternship.internship_id == internship_id
+    ).first()
+
+    if not saved:
+        db.close()
+
+        raise HTTPException(
+            status_code=404,
+            detail="Saved internship not found"
+        )
+
+    db.delete(saved)
+    db.commit()
+
+    db.close()
+
+    return {
+        "message": "Internship removed from saved"
+    }

@@ -2,115 +2,108 @@
 
 const loginForm = document.getElementById("loginForm");
 
+const API_URL = "http://127.0.0.1:8000";
 
 if (loginForm) {
 
-    loginForm.addEventListener(
-        "submit",
-        function (event) {
+    loginForm.addEventListener("submit", async function (event) {
 
-            event.preventDefault();
+        event.preventDefault();
 
+        // ================= GET VALUES =================
 
-            // ================= GET VALUES =================
+        const email =
+            document.getElementById("email")
+                .value
+                .trim()
+                .toLowerCase();
 
-            const email =
-                document.getElementById("email")
-                    .value
-                    .trim()
-                    .toLowerCase();
+        const password =
+            document.getElementById("password")
+                .value;
 
+        // ================= EMPTY CHECK =================
 
-            const password =
-                document.getElementById("password")
-                    .value;
+        if (email === "" || password === "") {
 
+            alert("Please fill all fields.");
+            return;
+        }
 
-            // ================= EMPTY CHECK =================
+        try {
 
-            if (email === "" || password === "") {
+            // ================= BACKEND LOGIN =================
 
-                alert("Please fill all fields.");
+            const response = await fetch(
+                `${API_URL}/login`,
+                {
+                    method: "POST",
 
-                return;
-            }
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                }
+            );
 
-            // ================= GET REGISTERED USER =================
+            const data = await response.json();
 
-            const savedUser =
-                JSON.parse(
-                    localStorage.getItem("internMatchUser")
-                );
+            // ================= LOGIN FAILED =================
 
-
-            // ================= NO ACCOUNT =================
-
-            if (!savedUser) {
-
-                alert(
-                    "No account found. Please create an account first."
-                );
-
-                return;
-            }
-
-
-            // ================= EMAIL CHECK =================
-
-            if (email !== savedUser.email) {
+            if (!response.ok) {
 
                 alert(
+                    data.detail ||
                     "❌ Invalid email or password."
                 );
 
                 return;
             }
 
+            // ================= SAVE JWT =================
 
-            // ================= PASSWORD CHECK =================
-
-            if (password !== savedUser.password) {
-
-                alert(
-                    "❌ Invalid email or password."
-                );
-
-                return;
-            }
-
-
-            // ================= LOGIN SUCCESS =================
+            localStorage.setItem(
+                "accessToken",
+                data.access_token
+            );
 
             localStorage.setItem(
                 "isLoggedIn",
                 "true"
             );
 
-
             localStorage.setItem(
                 "userEmail",
-                savedUser.email
+                email
             );
 
-
-            localStorage.setItem(
-                "profileName",
-                savedUser.name
-            );
-
+            // ================= LOGIN SUCCESS =================
 
             alert(
                 "✅ Login Successful! Welcome to InternMatch."
             );
-
 
             // ================= DASHBOARD =================
 
             window.location.href =
                 "dashboard.html";
 
+        } catch (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            alert(
+                "❌ Unable to connect to backend."
+            );
         }
-    );
+
+    });
 
 }

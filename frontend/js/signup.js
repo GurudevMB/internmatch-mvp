@@ -1,14 +1,18 @@
+// ================= API =================
+
+const API_URL = "http://127.0.0.1:8000";
+
+
 // ================= SIGNUP =================
 
 const signupForm =
     document.getElementById("signupForm");
 
-
 if (signupForm) {
 
     signupForm.addEventListener(
         "submit",
-        function (event) {
+        async function (event) {
 
             event.preventDefault();
 
@@ -20,18 +24,15 @@ if (signupForm) {
                     .value
                     .trim();
 
-
             const email =
                 document.getElementById("signupEmail")
                     .value
                     .trim()
                     .toLowerCase();
 
-
             const password =
                 document.getElementById("signupPassword")
                     .value;
-
 
             const confirmPassword =
                 document.getElementById("confirmPassword")
@@ -70,7 +71,6 @@ if (signupForm) {
             const emailPattern =
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-
             if (!emailPattern.test(email)) {
 
                 alert(
@@ -98,10 +98,8 @@ if (signupForm) {
             const hasUppercase =
                 /[A-Z]/.test(password);
 
-
             const hasNumber =
                 /[0-9]/.test(password);
-
 
             const hasSpecial =
                 /[!@#$%^&*]/.test(password);
@@ -145,7 +143,7 @@ if (signupForm) {
             }
 
 
-            // ================= CHECK EXISTING ACCOUNT =================
+            // ================= CHECK EXISTING LOCAL USER =================
 
             const existingUser =
                 JSON.parse(
@@ -168,58 +166,147 @@ if (signupForm) {
             }
 
 
-            // ================= SAVE USER =================
+            // ================= CREATE USER IN BACKEND =================
 
-            const user = {
+            try {
 
-                name: name,
+                const response =
+                    await fetch(
+                        `${API_URL}/users`,
+                        {
+                            method: "POST",
 
-                email: email,
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
 
-                password: password
+                                "Accept":
+                                    "application/json"
+                            },
 
-            };
+                            body: JSON.stringify({
 
+                                name: name,
 
-            localStorage.setItem(
-                "internMatchUser",
-                JSON.stringify(user)
-            );
+                                email: email,
 
+                                password: password,
 
-            // ================= SAVE PROFILE NAME =================
+                                role: "student"
 
-            localStorage.setItem(
-                "profileName",
-                name
-            );
-
-
-            // ================= SUCCESS =================
-
-            alert(
-                "✅ Account created successfully! Please login."
-            );
+                            })
+                        }
+                    );
 
 
-            // ================= REDIRECT =================
+                // ================= BACKEND ERROR =================
 
-            window.location.href =
-                "login.html";
+                if (!response.ok) {
+
+                    let errorMessage =
+                        "Unable to create account.";
+
+                    try {
+
+                        const errorData =
+                            await response.json();
+
+                        if (errorData.detail) {
+
+                            errorMessage =
+                                errorData.detail;
+
+                        }
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error reading backend response:",
+                            error
+                        );
+
+                    }
+
+                    alert(
+                        "❌ " + errorMessage
+                    );
+
+                    return;
+                }
+
+
+                // ================= SUCCESS RESPONSE =================
+
+                const createdUser =
+                    await response.json();
+
+
+                // ================= SAVE UI DATA =================
+
+                localStorage.setItem(
+                    "internMatchUser",
+                    JSON.stringify({
+
+                        name: createdUser.name,
+
+                        email: createdUser.email
+
+                    })
+                );
+
+
+                localStorage.setItem(
+                    "profileName",
+                    createdUser.name
+                );
+
+
+                // ================= SUCCESS =================
+
+                alert(
+                    "✅ Account created successfully! Please login."
+                );
+
+
+                // ================= REDIRECT =================
+
+                window.location.href =
+                    "login.html";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Signup error:",
+                    error
+                );
+
+                alert(
+                    "❌ Unable to connect to the backend. Please make sure FastAPI is running."
+                );
+
+            }
 
         }
     );
 
 }
+
+
 // ================= CLEAR SIGNUP FORM =================
 
-window.addEventListener("pageshow", function () {
+window.addEventListener(
+    "pageshow",
+    function () {
 
-    const signupForm =
-        document.getElementById("signupForm");
+        const signupForm =
+            document.getElementById("signupForm");
 
-    if (signupForm) {
-        signupForm.reset();
+        if (signupForm) {
+
+            signupForm.reset();
+
+        }
+
     }
-
-});
+);
