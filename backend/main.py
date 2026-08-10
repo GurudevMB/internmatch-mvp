@@ -286,6 +286,33 @@ def get_applications():
     return applications
 
 
+@app.delete("/applications/{user_id}/{internship_id}")
+def unapply_internship(user_id: int, internship_id: int):
+
+    db = SessionLocal()
+
+    application = db.query(Application).filter(
+        Application.user_id == user_id,
+        Application.internship_id == internship_id
+    ).first()
+
+    if not application:
+        db.close()
+
+        raise HTTPException(
+            status_code=404,
+            detail="Application not found"
+        )
+
+    db.delete(application)
+    db.commit()
+
+    db.close()
+
+    return {
+        "message": "Application withdrawn successfully"
+    }
+
 @app.post(
     "/saved-internships",
     response_model=SavedInternshipResponse
@@ -319,6 +346,18 @@ def save_internship(data: SavedInternshipCreate):
     db.close()
 
     return saved 
+@app.get(
+    "/saved-internships",
+    response_model=list[SavedInternshipResponse]
+)
+def get_saved_internships():
+    db = SessionLocal()
+
+    saved_internships = db.query(SavedInternship).all()
+
+    db.close()
+
+    return saved_internships
 
 @app.delete("/saved-internships/{user_id}/{internship_id}")
 def unsave_internship(user_id: int, internship_id: int):

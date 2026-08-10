@@ -2,15 +2,18 @@ const API_URL = "http://127.0.0.1:8000";
 
 // ================= WELCOME USER =================
 
-const email = localStorage.getItem("userEmail");
+const email =
+    localStorage.getItem("userEmail");
 
-const welcome = document.getElementById("welcomeUser");
+const welcome =
+    document.getElementById("welcomeUser");
 
 if (welcome) {
 
     if (email) {
 
-        const name = email.split("@")[0];
+        const name =
+            email.split("@")[0];
 
         welcome.textContent =
             "Welcome, " +
@@ -26,6 +29,40 @@ if (welcome) {
 }
 
 
+// ================= GET CURRENT USER ID =================
+
+function getCurrentUserId() {
+
+    const token =
+        localStorage.getItem("accessToken");
+
+    if (!token) {
+        return null;
+    }
+
+    try {
+
+        const payload =
+            JSON.parse(
+                atob(
+                    token.split(".")[1]
+                )
+            );
+
+        return Number(payload.sub);
+
+    } catch (error) {
+
+        console.error(
+            "Error reading user token:",
+            error
+        );
+
+        return null;
+    }
+}
+
+
 // ================= APPLIED COUNT FROM BACKEND =================
 
 async function loadAppliedCount() {
@@ -35,28 +72,17 @@ async function loadAppliedCount() {
 
     if (!appliedElement) return;
 
-    const token =
-        localStorage.getItem("accessToken");
+    const userId =
+        getCurrentUserId();
 
-    if (!token) {
+    if (!userId) {
 
         appliedElement.textContent = 0;
+
         return;
     }
 
     try {
-
-        // ================= GET USER ID FROM JWT =================
-
-        const payload =
-            JSON.parse(
-                atob(
-                    token.split(".")[1]
-                )
-            );
-
-        const userId =
-            Number(payload.sub);
 
         // ================= GET APPLICATIONS =================
 
@@ -75,6 +101,7 @@ async function loadAppliedCount() {
         const applications =
             await response.json();
 
+
         // ================= CURRENT USER APPLICATIONS =================
 
         const userApplications =
@@ -88,16 +115,19 @@ async function loadAppliedCount() {
                 }
             );
 
+
         // ================= UPDATE COUNT =================
 
         appliedElement.textContent =
             userApplications.length;
+
 
         // Keep localStorage synced
         localStorage.setItem(
             "appliedCount",
             userApplications.length
         );
+
 
     } catch (error) {
 
@@ -106,7 +136,7 @@ async function loadAppliedCount() {
             error
         );
 
-        // Fallback to existing localStorage value
+        // Fallback
         appliedElement.textContent =
             localStorage.getItem(
                 "appliedCount"
@@ -115,24 +145,94 @@ async function loadAppliedCount() {
 }
 
 
-// ================= SAVED COUNT =================
+// ================= SAVED COUNT FROM BACKEND =================
 
-const savedElement =
-    document.getElementById("savedCount");
+async function loadSavedCount() {
 
-if (savedElement) {
+    const savedElement =
+        document.getElementById("savedCount");
 
-    savedElement.textContent =
-        localStorage.getItem(
-            "savedCount"
-        ) || 0;
+    if (!savedElement) return;
+
+    const userId =
+        getCurrentUserId();
+
+    if (!userId) {
+
+        savedElement.textContent = 0;
+
+        return;
+    }
+
+    try {
+
+        // ================= GET SAVED INTERNSHIPS =================
+
+        const response =
+            await fetch(
+                `${API_URL}/saved-internships`
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load saved internships"
+            );
+        }
+
+        const savedInternships =
+            await response.json();
+
+
+        // ================= CURRENT USER SAVED INTERNSHIPS =================
+
+        const userSavedInternships =
+            savedInternships.filter(
+                function (saved) {
+
+                    return (
+                        saved.user_id === userId
+                    );
+
+                }
+            );
+
+
+        // ================= UPDATE COUNT =================
+
+        savedElement.textContent =
+            userSavedInternships.length;
+
+
+        // Keep localStorage synced
+        localStorage.setItem(
+            "savedCount",
+            userSavedInternships.length
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Error loading saved count:",
+            error
+        );
+
+        // Fallback
+        savedElement.textContent =
+            localStorage.getItem(
+                "savedCount"
+            ) || 0;
+    }
 }
 
 
 // ================= AVAILABLE INTERNSHIP COUNT =================
 
 const availableElement =
-    document.getElementById("availableCount");
+    document.getElementById(
+        "availableCount"
+    );
 
 if (availableElement) {
 
@@ -146,3 +246,4 @@ if (availableElement) {
 // ================= PAGE LOAD =================
 
 loadAppliedCount();
+loadSavedCount();

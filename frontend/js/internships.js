@@ -21,7 +21,6 @@ async function loadInternships() {
         const internships =
             await response.json();
 
-        // Clear hardcoded cards
         internshipList.innerHTML = "";
 
         internships.forEach(function (internship) {
@@ -70,16 +69,13 @@ async function loadInternships() {
             `;
 
             internshipList.appendChild(card);
-
         });
 
-        // Update available internship count
         localStorage.setItem(
             "availableCount",
             internships.length
         );
 
-        // Load current button states from backend/localStorage
         await loadButtonStates();
 
         setupSearch();
@@ -101,7 +97,7 @@ async function loadInternships() {
 }
 
 
-// ================= APPLY INTERNSHIP =================
+// ================= APPLY / UNAPPLY INTERNSHIP =================
 
 async function applyInternship(id) {
 
@@ -147,32 +143,69 @@ async function applyInternship(id) {
             await getResponse.json();
 
 
-        // ================= CHECK ALREADY APPLIED =================
+        // ================= CHECK CURRENT APPLICATION =================
 
         const existingApplication =
             applications.find(
                 function (application) {
 
                     return (
-                        application.user_id === userId &&
-                        application.internship_id === id
+                        Number(application.user_id) === userId &&
+                        Number(application.internship_id) === id
                     );
 
                 }
             );
 
 
+        // ================= UNAPPLY =================
+
         if (existingApplication) {
 
+            const deleteResponse =
+                await fetch(
+                    `${API_URL}/applications/${userId}/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+            if (!deleteResponse.ok) {
+
+                throw new Error(
+                    "Failed to withdraw application"
+                );
+            }
+
+
+            // ================= UPDATE BUTTON =================
+
+            const btn =
+                document.getElementById(
+                    "apply-" + id
+                );
+
+            if (btn) {
+
+                btn.innerText =
+                    "Apply";
+            }
+
+
+            // ================= UPDATE APPLIED COUNT =================
+
+            await updateAppliedCount(userId);
+
+
             alert(
-                "⚠️ You have already applied for this internship."
+                "❌ Application Withdrawn Successfully!"
             );
 
             return;
         }
 
 
-        // ================= POST APPLICATION =================
+        // ================= APPLY =================
 
         const response =
             await fetch(
@@ -194,7 +227,11 @@ async function applyInternship(id) {
 
         if (!response.ok) {
 
+            const errorData =
+                await response.json();
+
             throw new Error(
+                errorData.detail ||
                 "Failed to submit application"
             );
         }
@@ -224,19 +261,9 @@ async function applyInternship(id) {
         }
 
 
-        // ================= UPDATE LOCAL COUNT =================
+        // ================= UPDATE APPLIED COUNT =================
 
-        const currentCount =
-            Number(
-                localStorage.getItem(
-                    "appliedCount"
-                ) || 0
-            );
-
-        localStorage.setItem(
-            "appliedCount",
-            currentCount + 1
-        );
+        await updateAppliedCount(userId);
 
 
         alert(
@@ -252,7 +279,7 @@ async function applyInternship(id) {
         );
 
         alert(
-            "❌ Unable to submit application."
+            "❌ Unable to update application."
         );
     }
 }
@@ -260,35 +287,152 @@ async function applyInternship(id) {
 
 // ================= SAVE / UNSAVE =================
 
-function saveInternship(id) {
+async function saveInternship(id) {
 
-    let saved =
-        JSON.parse(
-            localStorage.getItem(
-                "savedInternships"
-            )
-        ) || [];
+    const token =
+        localStorage.getItem(
+            "accessToken"
+        );
+
+    if (!token) {
+
+        alert(
+            "Please login first."
+        );
+
+        return;
+    }
+
+    try {
+
+        // ================= GET USER ID FROM JWT =================
+
+        const payload =
+            JSON.parse(
+                atob(
+                    token.split(".")[1]
+                )
+            );
+
+        const userId =
+            Number(payload.sub);
 
 
-    // ================= UNSAVE =================
+        // ================= GET SAVED INTERNSHIPS =================
 
-    if (saved.includes(id)) {
+        const getResponse =
+            await fetch(
+                `${API_URL}/saved-internships`
+            );
 
-        saved =
-            saved.filter(
-                item => item !== id
+        if (!getResponse.ok) {
+
+            throw new Error(
+                "Failed to load saved internships"
+            );
+        }
+
+        const savedInternships =
+            await getResponse.json();
+
+
+        // ================= CHECK CURRENT SAVE =================
+
+        const existingSaved =
+            savedInternships.find(
+                function (saved) {
+
+                    return (
+                        Number(saved.user_id) === userId &&
+                        Number(saved.internship_id) === id
+                    );
+
+                }
             );
 
 
-        localStorage.setItem(
-            "savedInternships",
-            JSON.stringify(saved)
-        );
+        // ================= UNSAVE =================
+
+        if (existingSaved) {
+
+            const deleteResponse =
+                await fetch(
+                    `${API_URL}/saved-internships/${userId}/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+            if (!deleteResponse.ok) {
+
+                throw new Error(
+                    "Failed to remove saved internship"
+                );
+            }
 
 
-        localStorage.setItem(
-            "savedCount",
-            saved.length
+            const btn =
+                document.getElementById(
+                    "save-" + id
+                );
+
+            if (btn) {
+
+                btn.innerText =
+                    "⭐ Save";
+            }
+
+
+            await updateSavedCount(userId);
+
+
+            alert(
+                "❌ Internship Removed from Saved!"
+            );
+
+            return;
+        }
+
+
+        // ================= SAVE =================
+
+        const response =
+            await fetch(
+                `${API_URL}/saved-internships`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        user_id: userId,
+                        internship_id: id
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const errorData =
+                await response.json();
+
+            throw new Error(
+                errorData.detail ||
+                "Failed to save internship"
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Saved internship:",
+            data
         );
 
 
@@ -297,55 +441,120 @@ function saveInternship(id) {
                 "save-" + id
             );
 
-
         if (btn) {
 
             btn.innerText =
-                "⭐ Save";
+                "★ Saved";
         }
 
 
+        await updateSavedCount(userId);
+
+
         alert(
-            "❌ Internship Removed from Saved!"
-        );
-
-        return;
-    }
-
-
-    // ================= SAVE =================
-
-    saved.push(id);
-
-
-    localStorage.setItem(
-        "savedInternships",
-        JSON.stringify(saved)
-    );
-
-
-    localStorage.setItem(
-        "savedCount",
-        saved.length
-    );
-
-
-    const btn =
-        document.getElementById(
-            "save-" + id
+            "⭐ Internship Saved Successfully!"
         );
 
 
-    if (btn) {
+    } catch (error) {
 
-        btn.innerText =
-            "★ Saved";
+        console.error(
+            "Save/Unsave error:",
+            error
+        );
+
+        alert(
+            "❌ Unable to update saved internship."
+        );
     }
+}
 
 
-    alert(
-        "⭐ Internship Saved Successfully!"
-    );
+// ================= UPDATE APPLIED COUNT =================
+
+async function updateAppliedCount(userId) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/applications`
+            );
+
+        if (!response.ok) {
+            return;
+        }
+
+        const applications =
+            await response.json();
+
+        const userApplications =
+            applications.filter(
+                function (application) {
+
+                    return (
+                        Number(application.user_id) === userId
+                    );
+
+                }
+            );
+
+        localStorage.setItem(
+            "appliedCount",
+            userApplications.length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error updating applied count:",
+            error
+        );
+    }
+}
+
+
+// ================= UPDATE SAVED COUNT =================
+
+async function updateSavedCount(userId) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/saved-internships`
+            );
+
+        if (!response.ok) {
+            return;
+        }
+
+        const savedInternships =
+            await response.json();
+
+        const userSavedInternships =
+            savedInternships.filter(
+                function (saved) {
+
+                    return (
+                        Number(saved.user_id) === userId
+                    );
+
+                }
+            );
+
+        localStorage.setItem(
+            "savedCount",
+            userSavedInternships.length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error updating saved count:",
+            error
+        );
+    }
 }
 
 
@@ -358,12 +567,10 @@ function setupSearch() {
             "searchInput"
         );
 
-
     const internshipCards =
         document.querySelectorAll(
             ".internship-card"
         );
-
 
     if (!searchInput) {
         return;
@@ -449,126 +656,158 @@ function setupSearch() {
 
 async function loadButtonStates() {
 
-    // ================= GET CURRENT USER =================
-
     const token =
         localStorage.getItem(
             "accessToken"
         );
 
 
-    if (token) {
-
-        try {
-
-            const payload =
-                JSON.parse(
-                    atob(
-                        token.split(".")[1]
-                    )
-                );
+    if (!token) {
+        return;
+    }
 
 
-            const userId =
-                Number(payload.sub);
+    try {
+
+        // ================= GET CURRENT USER =================
+
+        const payload =
+            JSON.parse(
+                atob(
+                    token.split(".")[1]
+                )
+            );
 
 
-            // ================= GET APPLICATIONS FROM BACKEND =================
-
-            const response =
-                await fetch(
-                    `${API_URL}/applications`
-                );
+        const userId =
+            Number(payload.sub);
 
 
-            if (response.ok) {
+        // ================= GET APPLICATIONS =================
 
-                const applications =
-                    await response.json();
-
-
-                // ================= CURRENT USER APPLICATIONS =================
-
-                const userApplications =
-                    applications.filter(
-                        function (application) {
-
-                            return (
-                                application.user_id === userId
-                            );
-
-                        }
-                    );
+        const applicationResponse =
+            await fetch(
+                `${API_URL}/applications`
+            );
 
 
-                // ================= UPDATE APPLY BUTTONS =================
+        if (applicationResponse.ok) {
 
-                userApplications.forEach(
+            const applications =
+                await applicationResponse.json();
+
+
+            // ================= CURRENT USER APPLICATIONS =================
+
+            const userApplications =
+                applications.filter(
                     function (application) {
 
-                        const btn =
-                            document.getElementById(
-                                "apply-" +
-                                application.internship_id
-                            );
-
-
-                        if (btn) {
-
-                            btn.innerText =
-                                "✅ Applied";
-                        }
+                        return (
+                            Number(application.user_id) === userId
+                        );
 
                     }
                 );
 
 
-                // ================= SYNC APPLIED COUNT =================
+            // ================= UPDATE APPLY BUTTONS =================
 
-                localStorage.setItem(
-                    "appliedCount",
-                    userApplications.length
-                );
-            }
+            userApplications.forEach(
+                function (application) {
+
+                    const btn =
+                        document.getElementById(
+                            "apply-" +
+                            application.internship_id
+                        );
 
 
-        } catch (error) {
+                    if (btn) {
 
-            console.error(
-                "Error loading application states:",
-                error
+                        btn.innerText =
+                            "✅ Applied";
+                    }
+
+                }
+            );
+
+
+            // ================= SYNC APPLIED COUNT =================
+
+            localStorage.setItem(
+                "appliedCount",
+                userApplications.length
             );
         }
-    }
 
 
-    // ================= SAVED BUTTONS =================
+        // ================= GET SAVED INTERNSHIPS =================
 
-    const saved =
-        JSON.parse(
-            localStorage.getItem(
-                "savedInternships"
-            )
-        ) || [];
+        const savedResponse =
+            await fetch(
+                `${API_URL}/saved-internships`
+            );
 
 
-    saved.forEach(
-        function (id) {
+        if (savedResponse.ok) {
 
-            const btn =
-                document.getElementById(
-                    "save-" + id
+            const savedInternships =
+                await savedResponse.json();
+
+
+            // ================= CURRENT USER SAVED INTERNSHIPS =================
+
+            const userSavedInternships =
+                savedInternships.filter(
+                    function (saved) {
+
+                        return (
+                            Number(saved.user_id) === userId
+                        );
+
+                    }
                 );
 
 
-            if (btn) {
+            // ================= UPDATE SAVE BUTTONS =================
 
-                btn.innerText =
-                    "★ Saved";
-            }
+            userSavedInternships.forEach(
+                function (saved) {
 
+                    const btn =
+                        document.getElementById(
+                            "save-" +
+                            saved.internship_id
+                        );
+
+
+                    if (btn) {
+
+                        btn.innerText =
+                            "★ Saved";
+                    }
+
+                }
+            );
+
+
+            // ================= SYNC SAVED COUNT =================
+
+            localStorage.setItem(
+                "savedCount",
+                userSavedInternships.length
+            );
         }
-    );
+
+
+    } catch (error) {
+
+        console.error(
+            "Error loading button states:",
+            error
+        );
+    }
 }
 
 
