@@ -243,32 +243,46 @@ function setupSearch() {
         return;
     }
 
-    searchInput.oninput = function () {
+    function applySearch(searchText) {
 
-        const searchText =
-            this.value
+        searchText =
+            searchText
                 .toLowerCase()
                 .trim()
                 .replace(/\s+/g, " ");
 
-        internshipCards.forEach(
-            function (card) {
+        internshipCards.forEach(function (card) {
 
-                const cardText =
-                    card.textContent
-                        .toLowerCase()
-                        .trim()
-                        .replace(/\s+/g, " ");
+            const cardText =
+                card.textContent
+                    .toLowerCase()
+                    .trim()
+                    .replace(/\s+/g, " ");
 
-                card.style.display =
-                    cardText.includes(searchText)
-                        ? ""
-                        : "none";
+            if (cardText.includes(searchText)) {
+                card.style.display = "";
+            } else {
+                card.style.display = "none";
             }
-        );
-    };
 
-    // Search from home page
+        });
+    }
+
+
+    // ================= MANUAL SEARCH =================
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+
+            applySearch(this.value);
+
+        }
+    );
+
+
+    // ================= SEARCH FROM HOME PAGE =================
+
     const urlParams =
         new URLSearchParams(
             window.location.search
@@ -279,13 +293,12 @@ function setupSearch() {
 
     if (searchQuery) {
 
-        searchInput.value =
-            searchQuery;
+        searchInput.value = searchQuery;
 
-        searchInput.dispatchEvent(
-            new Event("input")
-        );
+        applySearch(searchQuery);
+
     }
+
 }
 
 
