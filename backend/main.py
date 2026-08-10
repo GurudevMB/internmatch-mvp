@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from database import SessionLocal
-from models import User
-from schemas import UserCreate
-
+from models import User, Company, Internship
+from schemas import (
+    UserCreate,
+    CompanyCreate,
+    InternshipCreate,
+    InternshipResponse
+)
 
 app = FastAPI()
 
@@ -11,6 +15,8 @@ app = FastAPI()
 def home():
     return {"message": "InternMatch Backend is running"}
 
+
+# ---------------- USERS ----------------
 
 @app.get("/users")
 def get_users():
@@ -41,3 +47,137 @@ def create_user(user: UserCreate):
     db.close()
 
     return new_user
+
+
+# ---------------- COMPANIES ----------------
+
+@app.get("/companies")
+def get_companies():
+    db = SessionLocal()
+
+    companies = db.query(Company).all()
+
+    db.close()
+
+    return companies
+
+
+@app.post("/companies")
+def create_company(company: CompanyCreate):
+    db = SessionLocal()
+
+    new_company = Company(
+        company_name=company.company_name,
+        email=company.email,
+        password=company.password,
+        location=company.location,
+        description=company.description
+    )
+
+    db.add(new_company)
+    db.commit()
+    db.refresh(new_company)
+
+    db.close()
+
+    return new_company
+
+
+# ---------------- INTERNSHIPS ----------------
+
+@app.get("/internships", response_model=list[InternshipResponse])
+def get_internships():
+    db = SessionLocal()
+
+    internships = db.query(Internship).all()
+
+    db.close()
+
+    return internships
+
+@app.get("/internships/{internship_id}", response_model=InternshipResponse)
+def get_internship(internship_id: int):
+    db = SessionLocal()
+
+    internship = db.query(Internship).filter(
+        Internship.internship_id == internship_id
+    ).first()
+
+    db.close()
+
+    if internship is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Internship not found"
+        )
+
+    return internship
+
+@app.put("/internships/{internship_id}", response_model=InternshipResponse)
+def update_internship(internship_id: int, internship: InternshipCreate):
+    db = SessionLocal()
+
+    existing_internship = db.query(Internship).filter(
+        Internship.internship_id == internship_id
+    ).first()
+
+    if existing_internship is None:
+        db.close()
+        return {"message": "Internship not found"}
+
+    existing_internship.company_id = internship.company_id
+    existing_internship.title = internship.title
+    existing_internship.description = internship.description
+    existing_internship.location = internship.location
+    existing_internship.duration = internship.duration
+    existing_internship.stipend = internship.stipend
+    existing_internship.skills_required = internship.skills_required
+
+    db.commit()
+    db.refresh(existing_internship)
+
+    db.close()
+
+    return existing_internship
+
+@app.delete("/internships/{internship_id}")
+def delete_internship(internship_id: int):
+    db = SessionLocal()
+
+    internship = db.query(Internship).filter(
+        Internship.internship_id == internship_id
+    ).first()
+
+    if internship is None:
+        db.close()
+        return {"message": "Internship not found"}
+
+    db.delete(internship)
+    db.commit()
+
+    db.close()
+
+    return {"message": "Internship deleted successfully"}
+
+
+@app.post("/internships")
+def create_internship(internship: InternshipCreate):
+    db = SessionLocal()
+
+    new_internship = Internship(
+        company_id=internship.company_id,
+        title=internship.title,
+        description=internship.description,
+        location=internship.location,
+        duration=internship.duration,
+        stipend=internship.stipend,
+        skills_required=internship.skills_required
+    )
+
+    db.add(new_internship)
+    db.commit()
+    db.refresh(new_internship)
+
+    db.close()
+
+    return new_internship
