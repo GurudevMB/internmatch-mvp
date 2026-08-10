@@ -5,11 +5,17 @@ from schemas import (
     UserCreate,
     CompanyCreate,
     InternshipCreate,
-    InternshipResponse
+    InternshipResponse,
+    LoginRequest
 )
+from datetime import datetime, timedelta
+from jose import jwt
 
 app = FastAPI()
 
+SECRET_KEY = "internmatch-super-secret-key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 @app.get("/")
 def home():
@@ -49,6 +55,49 @@ def create_user(user: UserCreate):
     return new_user
 
 
+@app.post("/login")
+def login(user: LoginRequest):
+    db = SessionLocal()
+
+    existing_user = db.query(User).filter(
+        User.email == user.email
+    ).first()
+
+    db.close()
+
+    if existing_user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+
+    if existing_user.password != user.password:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+
+    expire = datetime.utcnow() + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+
+    token_data = {
+        "sub": str(existing_user.user_id),
+        "email": existing_user.email,
+        "role": existing_user.role,
+        "exp": expire
+    }
+
+    access_token = jwt.encode(
+        token_data,
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 # ---------------- COMPANIES ----------------
 
 @app.get("/companies")
