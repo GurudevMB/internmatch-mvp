@@ -340,7 +340,7 @@ The backend connects to PostgreSQL through the project's database configuration.
 From the `backend` directory:
 
 ```bash
-uvicorn main:app --reload
+python -m uvicorn main:app --reload
 ```
 
 The backend will run at:
@@ -357,11 +357,12 @@ http://127.0.0.1:8000/docs
 
 ### 5. Run the Frontend
 
-Open the `frontend` folder in Visual Studio Code and run the frontend using a local development server such as **Live Server**.
+Open the project in Visual Studio Code.
 
-Open the frontend through the local server URL provided by the development server.
+Navigate to:
 
----
+```text
+frontend/index.html
 
 ## 🧪 API Documentation
 
