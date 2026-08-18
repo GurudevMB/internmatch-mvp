@@ -248,7 +248,6 @@ if (signupForm) {
                     JSON.stringify({
 
                         name: createdUser.name,
-
                         email: createdUser.email
 
                     })
