@@ -10,29 +10,22 @@ if (loginForm) {
 
         event.preventDefault();
 
-        // ================= GET VALUES =================
+        const email = document
+            .getElementById("email")
+            .value
+            .trim()
+            .toLowerCase();
 
-        const email =
-            document.getElementById("email")
-                .value
-                .trim()
-                .toLowerCase();
-
-        const password =
-            document.getElementById("password")
-                .value;
-
-        // ================= EMPTY CHECK =================
+        const password = document
+            .getElementById("password")
+            .value;
 
         if (email === "" || password === "") {
-
             alert("Please fill all fields.");
             return;
         }
 
         try {
-
-            // ================= BACKEND LOGIN =================
 
             const response = await fetch(
                 `${API_URL}/login`,
@@ -40,7 +33,8 @@ if (loginForm) {
                     method: "POST",
 
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
                     },
 
                     body: JSON.stringify({
@@ -50,9 +44,13 @@ if (loginForm) {
                 }
             );
 
-            const data = await response.json();
+            let data;
 
-            // ================= LOGIN FAILED =================
+            try {
+                data = await response.json();
+            } catch {
+                throw new Error("Invalid response from backend");
+            }
 
             if (!response.ok) {
 
@@ -64,11 +62,19 @@ if (loginForm) {
                 return;
             }
 
-            // ================= SAVE JWT =================
-
             localStorage.setItem(
                 "accessToken",
                 data.access_token
+            );
+
+            localStorage.setItem(
+                "tokenType",
+                data.token_type || "bearer"
+            );
+
+            localStorage.setItem(
+                "userRole",
+                data.role || ""
             );
 
             localStorage.setItem(
@@ -81,26 +87,16 @@ if (loginForm) {
                 email
             );
 
-            // ================= LOGIN SUCCESS =================
+            alert("✅ Login Successful! Welcome to InternMatch.");
 
-            alert(
-                "✅ Login Successful! Welcome to InternMatch."
-            );
-
-            // ================= DASHBOARD =================
-
-            window.location.href =
-                "dashboard.html";
+            window.location.href = "dashboard.html";
 
         } catch (error) {
 
-            console.error(
-                "Login error:",
-                error
-            );
+            console.error("Login error:", error);
 
             alert(
-                "❌ Unable to connect to backend."
+                "❌ Unable to connect to backend. Make sure FastAPI is running on port 8000."
             );
         }
 
