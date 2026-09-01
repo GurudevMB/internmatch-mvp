@@ -1,5 +1,8 @@
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 from database import SessionLocal, Base, engine
 from models import (
     User,
@@ -24,20 +27,30 @@ from schemas import (
 from datetime import datetime, timedelta
 from jose import jwt
 
+
+load_dotenv()
+
 Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-SECRET_KEY = "internmatch-super-secret-key"
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
 
 @app.get("/")
 def home():
@@ -120,6 +133,8 @@ def login(user: LoginRequest):
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+
 # ---------------- COMPANIES ----------------
 
 @app.get("/companies")
@@ -166,6 +181,7 @@ def get_internships():
 
     return internships
 
+
 @app.get("/internships/{internship_id}", response_model=InternshipResponse)
 def get_internship(internship_id: int):
     db = SessionLocal()
@@ -184,8 +200,12 @@ def get_internship(internship_id: int):
 
     return internship
 
+
 @app.put("/internships/{internship_id}", response_model=InternshipResponse)
-def update_internship(internship_id: int, internship: InternshipCreate):
+def update_internship(
+    internship_id: int,
+    internship: InternshipCreate
+):
     db = SessionLocal()
 
     existing_internship = db.query(Internship).filter(
@@ -194,7 +214,11 @@ def update_internship(internship_id: int, internship: InternshipCreate):
 
     if existing_internship is None:
         db.close()
-        return {"message": "Internship not found"}
+
+        raise HTTPException(
+            status_code=404,
+            detail="Internship not found"
+        )
 
     existing_internship.company_id = internship.company_id
     existing_internship.title = internship.title
@@ -211,6 +235,7 @@ def update_internship(internship_id: int, internship: InternshipCreate):
 
     return existing_internship
 
+
 @app.delete("/internships/{internship_id}")
 def delete_internship(internship_id: int):
     db = SessionLocal()
@@ -221,7 +246,11 @@ def delete_internship(internship_id: int):
 
     if internship is None:
         db.close()
-        return {"message": "Internship not found"}
+
+        raise HTTPException(
+            status_code=404,
+            detail="Internship not found"
+        )
 
     db.delete(internship)
     db.commit()
@@ -288,7 +317,6 @@ def get_applications():
 
 @app.delete("/applications/{user_id}/{internship_id}")
 def unapply_internship(user_id: int, internship_id: int):
-
     db = SessionLocal()
 
     application = db.query(Application).filter(
@@ -313,12 +341,14 @@ def unapply_internship(user_id: int, internship_id: int):
         "message": "Application withdrawn successfully"
     }
 
+
+# ---------------- SAVED INTERNSHIPS ----------------
+
 @app.post(
     "/saved-internships",
     response_model=SavedInternshipResponse
 )
 def save_internship(data: SavedInternshipCreate):
-
     db = SessionLocal()
 
     existing = db.query(SavedInternship).filter(
@@ -345,7 +375,9 @@ def save_internship(data: SavedInternshipCreate):
 
     db.close()
 
-    return saved 
+    return saved
+
+
 @app.get(
     "/saved-internships",
     response_model=list[SavedInternshipResponse]
@@ -359,9 +391,9 @@ def get_saved_internships():
 
     return saved_internships
 
+
 @app.delete("/saved-internships/{user_id}/{internship_id}")
 def unsave_internship(user_id: int, internship_id: int):
-
     db = SessionLocal()
 
     saved = db.query(SavedInternship).filter(
