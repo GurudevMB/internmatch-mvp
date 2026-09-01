@@ -1,4 +1,5 @@
 import os
+import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,12 +30,20 @@ from datetime import datetime, timedelta
 from jose import jwt
 
 
+# ---------------- CONFIGURATION ----------------
+
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
@@ -59,6 +68,18 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
+# ---------------- HEALTH ----------------
+
+@app.get("/health")
+def health_check():
+    logger.info("Health check requested")
+
+    return {
+        "status": "OK",
+        "service": "InternMatch Backend"
+    }
+
+
 @app.get("/")
 def home():
     return {"message": "InternMatch Backend is running"}
@@ -74,77 +95,126 @@ def get_users():
 
     db.close()
 
-    return users
+    # Hide password hashes from API response
+    return [
+        {
+            "user_id": user.user_id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role
+        }
+        for user in users
+    ]
 
 
 @app.post("/users")
 def create_user(user: UserCreate):
     db = SessionLocal()
 
-    hashed_password = pwd_context.hash(user.password)
+    try:
+        existing_user = db.query(User).filter(
+            User.email == user.email
+        ).first()
 
-    new_user = User(
-        name=user.name,
-        email=user.email,
-        password=hashed_password,
-        role=user.role
-    )
+        if existing_user:
+            raise HTTPException(
+                status_code=409,
+                detail="Email already registered"
+            )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+        hashed_password = pwd_context.hash(user.password)
 
-    db.close()
+        new_user = User(
+            name=user.name,
+            email=user.email,
+            password=hashed_password,
+            role=user.role
+        )
 
-    return new_user
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        logger.info(
+            "New user registered: %s with role %s",
+            new_user.email,
+            new_user.role
+        )
+
+        return {
+            "user_id": new_user.user_id,
+            "name": new_user.name,
+            "email": new_user.email,
+            "role": new_user.role
+        }
+
+    finally:
+        db.close()
 
 
 @app.post("/login")
 def login(user: LoginRequest):
     db = SessionLocal()
 
-    existing_user = db.query(User).filter(
-        User.email == user.email
-    ).first()
+    try:
+        existing_user = db.query(User).filter(
+            User.email == user.email
+        ).first()
 
-    db.close()
+        if existing_user is None:
+            logger.warning(
+                "Failed login attempt for email: %s",
+                user.email
+            )
 
-    if existing_user is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid email or password"
+            )
+
+        if not pwd_context.verify(
+            user.password,
+            existing_user.password
+        ):
+            logger.warning(
+                "Failed login attempt for email: %s",
+                user.email
+            )
+
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid email or password"
+            )
+
+        expire = datetime.utcnow() + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
-    if not pwd_context.verify(
-        user.password,
-        existing_user.password
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
+        token_data = {
+            "sub": str(existing_user.user_id),
+            "email": existing_user.email,
+            "role": existing_user.role,
+            "exp": expire
+        }
+
+        access_token = jwt.encode(
+            token_data,
+            SECRET_KEY,
+            algorithm=ALGORITHM
         )
 
-    expire = datetime.utcnow() + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+        logger.info(
+            "Successful login: %s",
+            existing_user.email
+        )
 
-    token_data = {
-        "sub": str(existing_user.user_id),
-        "email": existing_user.email,
-        "role": existing_user.role,
-        "exp": expire
-    }
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
 
-    access_token = jwt.encode(
-        token_data,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    finally:
+        db.close()
 
 
 # ---------------- COMPANIES ----------------
@@ -176,6 +246,11 @@ def create_company(company: CompanyCreate):
     db.commit()
     db.refresh(new_company)
 
+    logger.info(
+        "New company created: %s",
+        new_company.company_name
+    )
+
     db.close()
 
     return new_company
@@ -183,7 +258,10 @@ def create_company(company: CompanyCreate):
 
 # ---------------- INTERNSHIPS ----------------
 
-@app.get("/internships", response_model=list[InternshipResponse])
+@app.get(
+    "/internships",
+    response_model=list[InternshipResponse]
+)
 def get_internships():
     db = SessionLocal()
 
@@ -194,7 +272,10 @@ def get_internships():
     return internships
 
 
-@app.get("/internships/{internship_id}", response_model=InternshipResponse)
+@app.get(
+    "/internships/{internship_id}",
+    response_model=InternshipResponse
+)
 def get_internship(internship_id: int):
     db = SessionLocal()
 
@@ -213,7 +294,10 @@ def get_internship(internship_id: int):
     return internship
 
 
-@app.put("/internships/{internship_id}", response_model=InternshipResponse)
+@app.put(
+    "/internships/{internship_id}",
+    response_model=InternshipResponse
+)
 def update_internship(
     internship_id: int,
     internship: InternshipCreate
@@ -243,6 +327,11 @@ def update_internship(
     db.commit()
     db.refresh(existing_internship)
 
+    logger.info(
+        "Internship updated: ID %s",
+        internship_id
+    )
+
     db.close()
 
     return existing_internship
@@ -267,9 +356,16 @@ def delete_internship(internship_id: int):
     db.delete(internship)
     db.commit()
 
+    logger.info(
+        "Internship deleted: ID %s",
+        internship_id
+    )
+
     db.close()
 
-    return {"message": "Internship deleted successfully"}
+    return {
+        "message": "Internship deleted successfully"
+    }
 
 
 @app.post("/internships")
@@ -290,6 +386,11 @@ def create_internship(internship: InternshipCreate):
     db.commit()
     db.refresh(new_internship)
 
+    logger.info(
+        "New internship created: %s",
+        new_internship.title
+    )
+
     db.close()
 
     return new_internship
@@ -297,7 +398,10 @@ def create_internship(internship: InternshipCreate):
 
 # ---------------- APPLICATIONS ----------------
 
-@app.post("/applications", response_model=ApplicationResponse)
+@app.post(
+    "/applications",
+    response_model=ApplicationResponse
+)
 def create_application(application: ApplicationCreate):
     db = SessionLocal()
 
@@ -311,12 +415,21 @@ def create_application(application: ApplicationCreate):
     db.commit()
     db.refresh(new_application)
 
+    logger.info(
+        "Application created for user %s and internship %s",
+        application.user_id,
+        application.internship_id
+    )
+
     db.close()
 
     return new_application
 
 
-@app.get("/applications", response_model=list[ApplicationResponse])
+@app.get(
+    "/applications",
+    response_model=list[ApplicationResponse]
+)
 def get_applications():
     db = SessionLocal()
 
@@ -327,8 +440,13 @@ def get_applications():
     return applications
 
 
-@app.delete("/applications/{user_id}/{internship_id}")
-def unapply_internship(user_id: int, internship_id: int):
+@app.delete(
+    "/applications/{user_id}/{internship_id}"
+)
+def unapply_internship(
+    user_id: int,
+    internship_id: int
+):
     db = SessionLocal()
 
     application = db.query(Application).filter(
@@ -346,6 +464,11 @@ def unapply_internship(user_id: int, internship_id: int):
 
     db.delete(application)
     db.commit()
+
+    logger.info(
+        "Application withdrawn by user %s",
+        user_id
+    )
 
     db.close()
 
@@ -385,6 +508,11 @@ def save_internship(data: SavedInternshipCreate):
     db.commit()
     db.refresh(saved)
 
+    logger.info(
+        "Internship saved by user %s",
+        data.user_id
+    )
+
     db.close()
 
     return saved
@@ -397,15 +525,22 @@ def save_internship(data: SavedInternshipCreate):
 def get_saved_internships():
     db = SessionLocal()
 
-    saved_internships = db.query(SavedInternship).all()
+    saved_internships = db.query(
+        SavedInternship
+    ).all()
 
     db.close()
 
     return saved_internships
 
 
-@app.delete("/saved-internships/{user_id}/{internship_id}")
-def unsave_internship(user_id: int, internship_id: int):
+@app.delete(
+    "/saved-internships/{user_id}/{internship_id}"
+)
+def unsave_internship(
+    user_id: int,
+    internship_id: int
+):
     db = SessionLocal()
 
     saved = db.query(SavedInternship).filter(
@@ -423,6 +558,11 @@ def unsave_internship(user_id: int, internship_id: int):
 
     db.delete(saved)
     db.commit()
+
+    logger.info(
+        "Saved internship removed by user %s",
+        user_id
+    )
 
     db.close()
 
