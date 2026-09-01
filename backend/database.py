@@ -1,11 +1,13 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://postgres:InternMatch%40123@localhost:5432/internmatch"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
-
-Base = declarative_base()
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -13,7 +15,12 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
-with engine.connect() as connection:
-    print("Database connected successfully!")
+Base = declarative_base()
 
-Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
