@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from passlib.context import CryptContext
 from database import SessionLocal, Base, engine
 from models import (
     User,
@@ -33,6 +34,12 @@ load_dotenv()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto"
+)
 
 
 app.add_middleware(
@@ -74,10 +81,12 @@ def get_users():
 def create_user(user: UserCreate):
     db = SessionLocal()
 
+    hashed_password = pwd_context.hash(user.password)
+
     new_user = User(
         name=user.name,
         email=user.email,
-        password=user.password,
+        password=hashed_password,
         role=user.role
     )
 
@@ -106,7 +115,10 @@ def login(user: LoginRequest):
             detail="Invalid email or password"
         )
 
-    if existing_user.password != user.password:
+    if not pwd_context.verify(
+        user.password,
+        existing_user.password
+    ):
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
