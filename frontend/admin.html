@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -11,127 +12,16 @@
     >
 
     <title>
-        InternMatch - Admin Dashboard
+        InternMatch | Admin Dashboard
     </title>
 
-    <style>
 
-        * {
-            box-sizing: border-box;
-        }
+    <!-- ADMIN CSS -->
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-        }
-
-        header {
-            background: #1f2937;
-            color: white;
-            padding: 20px 40px;
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            margin: 0;
-        }
-
-        button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .logout-btn {
-            background: #ef4444;
-            color: white;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-
-        .form-container {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .form-container h2 {
-            margin-top: 0;
-        }
-
-        input,
-        textarea {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            margin-bottom: 15px;
-
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .create-btn {
-            background: #2563eb;
-            color: white;
-        }
-
-        .cancel-btn {
-            background: #6b7280;
-            color: white;
-            margin-left: 10px;
-        }
-
-        .internship-list {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .internship-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .internship-card h3 {
-            margin-top: 0;
-        }
-
-        .internship-card p {
-            line-height: 1.5;
-        }
-
-        .edit-btn {
-            background: #f59e0b;
-            color: white;
-            margin-right: 10px;
-        }
-
-        .delete-btn {
-            background: #ef4444;
-            color: white;
-        }
-
-    </style>
+    <link
+        rel="stylesheet"
+        href="css/admin.css"
+    >
 
 </head>
 
@@ -139,13 +29,34 @@
 <body>
 
 
-    <!-- HEADER -->
+    <!-- ================= HEADER ================= -->
 
     <header>
 
-        <h1>
-            InternMatch Admin Dashboard
-        </h1>
+        <div class="brand">
+
+            <div class="logo">
+
+                IM
+
+            </div>
+
+
+            <div class="brand-text">
+
+                <h1>
+                    InternMatch
+                </h1>
+
+
+                <p>
+                    Admin Management Portal
+                </p>
+
+            </div>
+
+        </div>
+
 
         <button
             class="logout-btn"
@@ -160,135 +71,471 @@
 
 
 
-    <div class="container">
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="container">
 
 
-        <!-- CREATE / EDIT FORM -->
+        <!-- ================= WELCOME ================= -->
 
-        <div class="form-container">
+        <section class="welcome">
 
-            <h2
-                id="formTitle"
-            >
+            <div>
 
-                Create Internship
+                <p class="welcome-tag">
 
-            </h2>
+                    ADMIN PANEL
 
+                </p>
+
+
+                <h2>
+
+                    Admin Dashboard 👋
+
+                </h2>
+
+
+                <p class="welcome-text">
+
+                    Manage internship opportunities and keep
+                    the InternMatch platform updated.
+
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= STATS ================= -->
+
+        <section class="stats-container">
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    📋
+
+                </div>
+
+
+                <div>
+
+                    <p>
+
+                        Total Internships
+
+                    </p>
+
+
+                    <h3
+                        id="totalInternships"
+                    >
+
+                        0
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    🛡️
+
+                </div>
+
+
+                <div>
+
+                    <p>
+
+                        Account Role
+
+                    </p>
+
+
+                    <h3>
+
+                        Admin
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    ⚡
+
+                </div>
+
+
+                <div>
+
+                    <p>
+
+                        Platform Status
+
+                    </p>
+
+
+                    <h3 class="active-status">
+
+                        Active
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ================= CREATE / EDIT ================= -->
+
+        <section class="form-container">
+
+
+            <div class="form-heading">
+
+                <div>
+
+                    <p class="section-tag">
+
+                        INTERNSHIP MANAGEMENT
+
+                    </p>
+
+
+                    <h2
+                        id="formTitle"
+                    >
+
+                        Create Internship
+
+                    </h2>
+
+
+                    <p>
+
+                        Add a new internship opportunity
+                        for students.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ================= FORM ================= -->
 
             <form
                 id="internshipForm"
             >
 
 
-                <input
-                    type="number"
-                    id="companyId"
-                    placeholder="Company ID"
-                    required
-                >
+                <div class="form-grid">
 
 
-                <input
-                    type="text"
-                    id="title"
-                    placeholder="Internship Title"
-                    required
-                >
+                    <!-- COMPANY ID -->
+
+                    <div class="form-group">
+
+                        <label for="companyId">
+
+                            Company ID
+
+                        </label>
 
 
-                <textarea
-                    id="description"
-                    placeholder="Internship Description"
-                    required
-                ></textarea>
+                        <input
+                            type="number"
+                            id="companyId"
+                            placeholder="Enter Company ID"
+                            required
+                        >
+
+                    </div>
 
 
-                <input
-                    type="text"
-                    id="location"
-                    placeholder="Location"
-                    required
-                >
+
+                    <!-- TITLE -->
+
+                    <div class="form-group">
+
+                        <label for="title">
+
+                            Internship Title
+
+                        </label>
 
 
-                <input
-                    type="text"
-                    id="duration"
-                    placeholder="Duration (Example: 3 Months)"
-                    required
-                >
+                        <input
+                            type="text"
+                            id="title"
+                            placeholder="Example: Frontend Developer Intern"
+                            required
+                        >
+
+                    </div>
 
 
-                <input
-                    type="text"
-                    id="stipend"
-                    placeholder="Stipend (Example: 10000)"
-                    required
-                >
+
+                    <!-- LOCATION -->
+
+                    <div class="form-group">
+
+                        <label for="location">
+
+                            Location
+
+                        </label>
 
 
-                <input
-                    type="text"
-                    id="skills"
-                    placeholder="Skills Required"
-                    required
-                >
+                        <input
+                            type="text"
+                            id="location"
+                            placeholder="Example: Coimbatore"
+                            required
+                        >
+
+                    </div>
 
 
-                <button
-                    type="submit"
-                    class="create-btn"
-                    id="submitButton"
-                >
 
-                    Create Internship
+                    <!-- DURATION -->
 
-                </button>
+                    <div class="form-group">
+
+                        <label for="duration">
+
+                            Duration
+
+                        </label>
 
 
-                <button
-                    type="button"
-                    class="cancel-btn"
-                    id="cancelButton"
-                    onclick="cancelEdit()"
-                    style="display: none;"
-                >
+                        <input
+                            type="text"
+                            id="duration"
+                            placeholder="Example: 3 Months"
+                            required
+                        >
 
-                    Cancel Edit
+                    </div>
 
-                </button>
+
+
+                    <!-- STIPEND -->
+
+                    <div class="form-group">
+
+                        <label for="stipend">
+
+                            Stipend
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="stipend"
+                            placeholder="Example: 10000"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <!-- SKILLS -->
+
+                    <div class="form-group">
+
+                        <label for="skills">
+
+                            Skills Required
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="skills"
+                            placeholder="HTML, CSS, JavaScript"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <!-- DESCRIPTION -->
+
+                    <div class="form-group full-width">
+
+                        <label for="description">
+
+                            Internship Description
+
+                        </label>
+
+
+                        <textarea
+                            id="description"
+                            placeholder="Describe the internship responsibilities and requirements..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- ================= BUTTONS ================= -->
+
+                <div class="form-actions">
+
+
+                    <button
+                        type="submit"
+                        class="create-btn"
+                        id="submitButton"
+                    >
+
+                        + Create Internship
+
+                    </button>
+
+
+
+                    <button
+                        type="button"
+                        class="cancel-btn"
+                        id="cancelButton"
+                        onclick="cancelEdit()"
+                        style="display: none;"
+                    >
+
+                        Cancel Edit
+
+                    </button>
+
+
+                </div>
 
 
             </form>
 
-        </div>
+
+        </section>
 
 
 
-        <!-- INTERNSHIP LIST -->
+        <!-- ================= INTERNSHIP LIST ================= -->
 
-        <h2>
-            Manage Internships
-        </h2>
+        <section class="internships-section">
 
 
-        <div
-            class="internship-list"
-            id="internshipList"
-        >
-
-            Loading internships...
-
-        </div>
+            <div class="section-header">
 
 
-    </div>
+                <div>
+
+                    <p class="section-tag">
+
+                        YOUR LISTINGS
+
+                    </p>
 
 
-    
-        <script src="js/admin.js"></script>
-    
+                    <h2>
+
+                        Manage Internships
+
+                    </h2>
+
+
+                    <p>
+
+                        Edit or delete existing internship
+                        opportunities.
+
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="internship-count"
+                >
+
+                    <span
+                        id="internshipCount"
+                    >
+
+                        0
+
+                    </span>
+
+                    Internships
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- ================= LIST ================= -->
+
+            <div
+                class="internship-list"
+                id="internshipList"
+            >
+
+                <div class="loading">
+
+                    Loading internships...
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- ================= ADMIN JAVASCRIPT ================= -->
+
+    <script
+        src="js/admin.js"
+    ></script>
 
 
 </body>

@@ -21,7 +21,9 @@ if (loginForm) {
             .value;
 
         if (email === "" || password === "") {
+
             alert("Please fill all fields.");
+
             return;
         }
 
@@ -30,26 +32,40 @@ if (loginForm) {
             const response = await fetch(
                 `${API_URL}/login`,
                 {
+
                     method: "POST",
 
                     headers: {
+
                         "Content-Type": "application/json",
+
                         "Accept": "application/json"
+
                     },
 
                     body: JSON.stringify({
+
                         email: email,
+
                         password: password
+
                     })
+
                 }
             );
 
             let data;
 
             try {
+
                 data = await response.json();
+
             } catch {
-                throw new Error("Invalid response from backend");
+
+                throw new Error(
+                    "Invalid response from backend"
+                );
+
             }
 
             if (!response.ok) {
@@ -60,7 +76,11 @@ if (loginForm) {
                 );
 
                 return;
+
             }
+
+
+            // ================= SAVE LOGIN DATA =================
 
             localStorage.setItem(
                 "accessToken",
@@ -87,17 +107,53 @@ if (loginForm) {
                 email
             );
 
-            alert("✅ Login Successful! Welcome to InternMatch.");
 
-            window.location.href = "dashboard.html";
+            // ================= ROLE BASED REDIRECT =================
+
+            if (data.role === "admin") {
+
+                alert(
+                    "✅ Admin Login Successful!"
+                );
+
+                window.location.href =
+                    "admin.html";
+
+            }
+
+            else if (data.role === "student") {
+
+                alert(
+                    "✅ Login Successful! Welcome to InternMatch."
+                );
+
+                window.location.href =
+                    "dashboard.html";
+
+            }
+
+            else {
+
+                alert(
+                    "❌ Unknown user role."
+                );
+
+                localStorage.clear();
+
+            }
+
 
         } catch (error) {
 
-            console.error("Login error:", error);
+            console.error(
+                "Login error:",
+                error
+            );
 
             alert(
                 "❌ Unable to connect to backend. Make sure FastAPI is running on port 8000."
             );
+
         }
 
     });
