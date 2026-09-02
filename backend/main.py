@@ -1,46 +1,26 @@
 import os
-
-from fastapi import (
-    FastAPI,
-    HTTPException,
-    Depends,
-    status
-)
-
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import (
-    HTTPBearer,
-    HTTPAuthorizationCredentials
-)
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from database import SessionLocal, Base, engine
-
-from models import (
-    User,
-    Company,
-    Internship,
-    Application,
-    SavedInternship
-)
-
+from database import Base, SessionLocal, engine
+from models import Application, Company, Internship, SavedInternship, User
 from schemas import (
-    UserCreate,
+    ApplicationCreate,
+    ApplicationResponse,
     CompanyCreate,
     InternshipCreate,
     InternshipResponse,
     LoginRequest,
-    ApplicationCreate,
-    ApplicationResponse,
     SavedInternshipCreate,
-    SavedInternshipResponse
+    SavedInternshipResponse,
+    UserCreate,
 )
-
-from datetime import datetime, timedelta
-from jose import jwt, JWTError
-
 
 # ==================================================
 # ENVIRONMENT
@@ -289,10 +269,9 @@ def login(user: LoginRequest):
                 detail="Invalid email or password"
             )
 
-        expire = datetime.utcnow() + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-        )
-
+        expire = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
         token_data = {
             "sub": str(existing_user.user_id),
             "email": existing_user.email,
