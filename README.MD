@@ -392,3 +392,8 @@ The goal of InternMatch is to provide students with a simple platform for discov
 * Production deployment
 * Improved authentication and authorization
 * Enhanced UI/UX
+
+
+## Backend Deployment
+
+The backend is configured for deployment and can be run using the project's configured environment settings.
