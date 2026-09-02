@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        InternMatch - Admin Dashboard
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 20px 40px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .create-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #6b7280;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .internship-list {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .internship-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .internship-card h3 {
+            margin-top: 0;
+        }
+
+        .internship-card p {
+            line-height: 1.5;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- HEADER -->
+
+    <header>
+
+        <h1>
+            InternMatch Admin Dashboard
+        </h1>
+
+        <button
+            class="logout-btn"
+            onclick="logout()"
+        >
+
+            Logout
+
+        </button>
+
+    </header>
+
+
+
+    <div class="container">
+
+
+        <!-- CREATE / EDIT FORM -->
+
+        <div class="form-container">
+
+            <h2
+                id="formTitle"
+            >
+
+                Create Internship
+
+            </h2>
+
+
+            <form
+                id="internshipForm"
+            >
+
+
+                <input
+                    type="number"
+                    id="companyId"
+                    placeholder="Company ID"
+                    required
+                >
+
+
+                <input
+                    type="text"
+                    id="title"
+                    placeholder="Internship Title"
+                    required
+                >
+
+
+                <textarea
+                    id="description"
+                    placeholder="Internship Description"
+                    required
+                ></textarea>
+
+
+                <input
+                    type="text"
+                    id="location"
+                    placeholder="Location"
+                    required
+                >
+
+
+                <input
+                    type="text"
+                    id="duration"
+                    placeholder="Duration (Example: 3 Months)"
+                    required
+                >
+
+
+                <input
+                    type="text"
+                    id="stipend"
+                    placeholder="Stipend (Example: 10000)"
+                    required
+                >
+
+
+                <input
+                    type="text"
+                    id="skills"
+                    placeholder="Skills Required"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="create-btn"
+                    id="submitButton"
+                >
+
+                    Create Internship
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    id="cancelButton"
+                    onclick="cancelEdit()"
+                    style="display: none;"
+                >
+
+                    Cancel Edit
+
+                </button>
+
+
+            </form>
+
+        </div>
+
+
+
+        <!-- INTERNSHIP LIST -->
+
+        <h2>
+            Manage Internships
+        </h2>
+
+
+        <div
+            class="internship-list"
+            id="internshipList"
+        >
+
+            Loading internships...
+
+        </div>
+
+
+    </div>
+
+
+    
+        <script src="js/admin.js"></script>
+    
+
+
+</body>
+
+</html>

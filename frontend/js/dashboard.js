@@ -1,5 +1,20 @@
 const API_URL = "http://127.0.0.1:8000";
 
+
+// ================= AUTH HEADERS =================
+
+function getAuthHeaders() {
+
+    const token =
+        localStorage.getItem("accessToken");
+
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
+}
+
+
 // ================= WELCOME USER =================
 
 const email =
@@ -84,11 +99,12 @@ async function loadAppliedCount() {
 
     try {
 
-        // ================= GET APPLICATIONS =================
-
         const response =
             await fetch(
-                `${API_URL}/applications`
+                `${API_URL}/applications`,
+                {
+                    headers: getAuthHeaders()
+                }
             );
 
         if (!response.ok) {
@@ -101,33 +117,24 @@ async function loadAppliedCount() {
         const applications =
             await response.json();
 
-
-        // ================= CURRENT USER APPLICATIONS =================
-
         const userApplications =
             applications.filter(
                 function (application) {
 
                     return (
-                        application.user_id === userId
+                        Number(application.user_id) === userId
                     );
 
                 }
             );
 
-
-        // ================= UPDATE COUNT =================
-
         appliedElement.textContent =
             userApplications.length;
 
-
-        // Keep localStorage synced
         localStorage.setItem(
             "appliedCount",
             userApplications.length
         );
-
 
     } catch (error) {
 
@@ -136,7 +143,6 @@ async function loadAppliedCount() {
             error
         );
 
-        // Fallback
         appliedElement.textContent =
             localStorage.getItem(
                 "appliedCount"
@@ -166,11 +172,12 @@ async function loadSavedCount() {
 
     try {
 
-        // ================= GET SAVED INTERNSHIPS =================
-
         const response =
             await fetch(
-                `${API_URL}/saved-internships`
+                `${API_URL}/saved-internships`,
+                {
+                    headers: getAuthHeaders()
+                }
             );
 
         if (!response.ok) {
@@ -183,33 +190,24 @@ async function loadSavedCount() {
         const savedInternships =
             await response.json();
 
-
-        // ================= CURRENT USER SAVED INTERNSHIPS =================
-
         const userSavedInternships =
             savedInternships.filter(
                 function (saved) {
 
                     return (
-                        saved.user_id === userId
+                        Number(saved.user_id) === userId
                     );
 
                 }
             );
 
-
-        // ================= UPDATE COUNT =================
-
         savedElement.textContent =
             userSavedInternships.length;
 
-
-        // Keep localStorage synced
         localStorage.setItem(
             "savedCount",
             userSavedInternships.length
         );
-
 
     } catch (error) {
 
@@ -218,7 +216,6 @@ async function loadSavedCount() {
             error
         );
 
-        // Fallback
         savedElement.textContent =
             localStorage.getItem(
                 "savedCount"
@@ -229,21 +226,57 @@ async function loadSavedCount() {
 
 // ================= AVAILABLE INTERNSHIP COUNT =================
 
-const availableElement =
-    document.getElementById(
-        "availableCount"
-    );
+async function loadAvailableCount() {
 
-if (availableElement) {
-
-    availableElement.textContent =
-        localStorage.getItem(
+    const availableElement =
+        document.getElementById(
             "availableCount"
-        ) || 0;
+        );
+
+    if (!availableElement) return;
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/internships`
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load internships"
+            );
+        }
+
+        const internships =
+            await response.json();
+
+        availableElement.textContent =
+            internships.length;
+
+        localStorage.setItem(
+            "availableCount",
+            internships.length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error loading internship count:",
+            error
+        );
+
+        availableElement.textContent =
+            localStorage.getItem(
+                "availableCount"
+            ) || 0;
+    }
 }
 
 
 // ================= PAGE LOAD =================
 
+loadAvailableCount();
 loadAppliedCount();
 loadSavedCount();

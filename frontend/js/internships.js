@@ -6,31 +6,85 @@ const API_URL = "http://127.0.0.1:8000";
 function getAuthHeaders() {
 
     const token =
-        localStorage.getItem("accessToken");
+        localStorage.getItem(
+            "accessToken"
+        );
 
     return {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+
+        "Authorization":
+            `Bearer ${token}`
     };
 }
 
 
-// ================= LOAD INTERNSHIPS FROM BACKEND =================
+// ================= GET CURRENT USER ID =================
+
+function getCurrentUserId() {
+
+    const token =
+        localStorage.getItem(
+            "accessToken"
+        );
+
+    if (!token) {
+
+        return null;
+    }
+
+    try {
+
+        const payload =
+            JSON.parse(
+                atob(
+                    token
+                        .split(".")[1]
+                )
+            );
+
+        return Number(
+            payload.sub
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error reading token:",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+// ================= LOAD INTERNSHIPS =================
 
 async function loadInternships() {
 
     const internshipList =
-        document.querySelector(".internship-list");
+        document.querySelector(
+            ".internship-list"
+        );
 
-    if (!internshipList) return;
+    if (!internshipList) {
+
+        return;
+    }
 
     try {
 
         const response =
-            await fetch(`${API_URL}/internships`);
+            await fetch(
+                `${API_URL}/internships`
+            );
 
         if (!response.ok) {
-            throw new Error("Failed to load internships");
+
+            throw new Error(
+                "Failed to load internships"
+            );
         }
 
         const internships =
@@ -38,62 +92,141 @@ async function loadInternships() {
 
         internshipList.innerHTML = "";
 
-        internships.forEach(function (internship) {
 
-            const card =
-                document.createElement("div");
+        // ================= CREATE INTERNSHIP CARDS =================
 
-            card.className = "internship-card";
+        internships.forEach(
+            function (internship) {
 
-            card.innerHTML = `
-                <h2>${internship.title}</h2>
+                const card =
+                    document.createElement(
+                        "div"
+                    );
 
-                <p>Company #${internship.company_id}</p>
+                card.className =
+                    "internship-card";
 
-                <span>
-                    ${internship.location || "Location not specified"}
-                    |
-                    ₹${internship.stipend || "Not specified"}
-                </span>
 
-                <p>
-                    ${internship.description || ""}
-                </p>
+                card.innerHTML = `
 
-                <p>
-                    <strong>Duration:</strong>
-                    ${internship.duration || "Not specified"}
-                </p>
+                    <h2>
+                        ${internship.title}
+                    </h2>
 
-                <p>
-                    <strong>Skills:</strong>
-                    ${internship.skills_required || "Not specified"}
-                </p>
+                    <p>
+                        Company #${internship.company_id}
+                    </p>
 
-                <button
-                    id="apply-${internship.internship_id}"
-                    onclick="applyInternship(${internship.internship_id})">
-                    Apply
-                </button>
+                    <span>
 
-                <button
-                    id="save-${internship.internship_id}"
-                    onclick="saveInternship(${internship.internship_id})">
-                    ⭐ Save
-                </button>
-            `;
+                        ${
+                            internship.location ||
+                            "Location not specified"
+                        }
 
-            internshipList.appendChild(card);
-        });
+                        |
+
+                        ₹${
+                            internship.stipend ||
+                            "Not specified"
+                        }
+
+                    </span>
+
+                    <p>
+                        ${
+                            internship.description ||
+                            ""
+                        }
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Duration:
+                        </strong>
+
+                        ${
+                            internship.duration ||
+                            "Not specified"
+                        }
+
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Skills:
+                        </strong>
+
+                        ${
+                            internship.skills_required ||
+                            "Not specified"
+                        }
+
+                    </p>
+
+                    <button
+
+                        id="apply-${internship.internship_id}"
+
+                        onclick="
+                            applyInternship(
+                                ${internship.internship_id}
+                            )
+                        "
+
+                    >
+
+                        Apply
+
+                    </button>
+
+
+                    <button
+
+                        id="save-${internship.internship_id}"
+
+                        onclick="
+                            saveInternship(
+                                ${internship.internship_id}
+                            )
+                        "
+
+                    >
+
+                        ⭐ Save
+
+                    </button>
+
+                `;
+
+
+                internshipList.appendChild(
+                    card
+                );
+
+            }
+        );
+
+
+        // ================= AVAILABLE COUNT =================
 
         localStorage.setItem(
             "availableCount",
             internships.length
         );
 
+
+        // ================= LOAD BUTTON STATES =================
+
         await loadButtonStates();
 
+
+        // ================= SETUP SEARCH =================
+
         setupSearch();
+
 
     } catch (error) {
 
@@ -103,48 +236,54 @@ async function loadInternships() {
         );
 
         internshipList.innerHTML = `
+
             <p>
                 Unable to load internships.
-                Please make sure the backend server is running.
+                Please make sure the backend server
+                is running.
             </p>
+
         `;
     }
 }
 
 
-// ================= APPLY / UNAPPLY INTERNSHIP =================
+// ================= APPLY / UNAPPLY =================
 
 async function applyInternship(id) {
 
     const token =
-        localStorage.getItem("accessToken");
+        localStorage.getItem(
+            "accessToken"
+        );
 
-    if (!token) {
+    const userId =
+        getCurrentUserId();
 
-        alert("Please login first.");
+
+    if (!token || !userId) {
+
+        alert(
+            "Please login first."
+        );
+
         return;
     }
 
+
     try {
 
-        const payload =
-            JSON.parse(
-                atob(
-                    token.split(".")[1]
-                )
-            );
-
-        const userId =
-            Number(payload.sub);
-
+        // ================= GET CURRENT USER APPLICATIONS =================
 
         const getResponse =
             await fetch(
                 `${API_URL}/applications`,
                 {
-                    headers: getAuthHeaders()
+                    headers:
+                        getAuthHeaders()
                 }
             );
+
 
         if (!getResponse.ok) {
 
@@ -153,18 +292,20 @@ async function applyInternship(id) {
             );
         }
 
+
         const applications =
             await getResponse.json();
 
+
+        // ================= CHECK IF ALREADY APPLIED =================
 
         const existingApplication =
             applications.find(
                 function (application) {
 
-                    return (
-                        Number(application.user_id) === userId &&
-                        Number(application.internship_id) === id
-                    );
+                    return Number(
+                        application.internship_id
+                    ) === Number(id);
 
                 }
             );
@@ -176,24 +317,36 @@ async function applyInternship(id) {
 
             const deleteResponse =
                 await fetch(
-                    `${API_URL}/applications/${userId}/${id}`,
+                    `${API_URL}/applications/${id}`,
                     {
-                        method: "DELETE",
-                        headers: getAuthHeaders()
+
+                        method:
+                            "DELETE",
+
+                        headers:
+                            getAuthHeaders()
+
                     }
                 );
 
+
             if (!deleteResponse.ok) {
 
+                const errorData =
+                    await deleteResponse.json();
+
                 throw new Error(
+                    errorData.detail ||
                     "Failed to withdraw application"
                 );
             }
+
 
             const btn =
                 document.getElementById(
                     "apply-" + id
                 );
+
 
             if (btn) {
 
@@ -201,7 +354,9 @@ async function applyInternship(id) {
                     "Apply";
             }
 
-            await updateAppliedCount(userId);
+
+            await updateAppliedCount();
+
 
             alert(
                 "❌ Application Withdrawn Successfully!"
@@ -217,14 +372,26 @@ async function applyInternship(id) {
             await fetch(
                 `${API_URL}/applications`,
                 {
-                    method: "POST",
 
-                    headers: getAuthHeaders(),
+                    method:
+                        "POST",
 
-                    body: JSON.stringify({
-                        user_id: userId,
-                        internship_id: id
-                    })
+                    headers:
+                        getAuthHeaders(),
+
+                    body:
+                        JSON.stringify(
+                            {
+
+                                user_id:
+                                    userId,
+
+                                internship_id:
+                                    Number(id)
+
+                            }
+                        )
+
                 }
             );
 
@@ -235,14 +402,18 @@ async function applyInternship(id) {
                 await response.json();
 
             throw new Error(
+
                 errorData.detail ||
+
                 "Failed to submit application"
+
             );
         }
 
 
         const data =
             await response.json();
+
 
         console.log(
             "Application created:",
@@ -255,17 +426,21 @@ async function applyInternship(id) {
                 "apply-" + id
             );
 
+
         if (btn) {
 
             btn.innerText =
                 "✅ Applied";
         }
 
-        await updateAppliedCount(userId);
+
+        await updateAppliedCount();
+
 
         alert(
             "✅ Application Submitted Successfully!"
         );
+
 
     } catch (error) {
 
@@ -275,7 +450,8 @@ async function applyInternship(id) {
         );
 
         alert(
-            "❌ Unable to update application."
+            "❌ " +
+            error.message
         );
     }
 }
@@ -290,7 +466,11 @@ async function saveInternship(id) {
             "accessToken"
         );
 
-    if (!token) {
+    const userId =
+        getCurrentUserId();
+
+
+    if (!token || !userId) {
 
         alert(
             "Please login first."
@@ -299,26 +479,22 @@ async function saveInternship(id) {
         return;
     }
 
+
     try {
 
-        const payload =
-            JSON.parse(
-                atob(
-                    token.split(".")[1]
-                )
-            );
-
-        const userId =
-            Number(payload.sub);
-
+        // ================= GET CURRENT USER SAVED INTERNSHIPS =================
 
         const getResponse =
             await fetch(
                 `${API_URL}/saved-internships`,
                 {
-                    headers: getAuthHeaders()
+
+                    headers:
+                        getAuthHeaders()
+
                 }
             );
+
 
         if (!getResponse.ok) {
 
@@ -327,18 +503,20 @@ async function saveInternship(id) {
             );
         }
 
+
         const savedInternships =
             await getResponse.json();
 
+
+        // ================= CHECK IF ALREADY SAVED =================
 
         const existingSaved =
             savedInternships.find(
                 function (saved) {
 
-                    return (
-                        Number(saved.user_id) === userId &&
-                        Number(saved.internship_id) === id
-                    );
+                    return Number(
+                        saved.internship_id
+                    ) === Number(id);
 
                 }
             );
@@ -350,16 +528,26 @@ async function saveInternship(id) {
 
             const deleteResponse =
                 await fetch(
-                    `${API_URL}/saved-internships/${userId}/${id}`,
+                    `${API_URL}/saved-internships/${id}`,
                     {
-                        method: "DELETE",
-                        headers: getAuthHeaders()
+
+                        method:
+                            "DELETE",
+
+                        headers:
+                            getAuthHeaders()
+
                     }
                 );
 
+
             if (!deleteResponse.ok) {
 
+                const errorData =
+                    await deleteResponse.json();
+
                 throw new Error(
+                    errorData.detail ||
                     "Failed to remove saved internship"
                 );
             }
@@ -370,6 +558,7 @@ async function saveInternship(id) {
                     "save-" + id
                 );
 
+
             if (btn) {
 
                 btn.innerText =
@@ -377,7 +566,8 @@ async function saveInternship(id) {
             }
 
 
-            await updateSavedCount(userId);
+            await updateSavedCount();
+
 
             alert(
                 "❌ Internship Removed from Saved!"
@@ -393,14 +583,26 @@ async function saveInternship(id) {
             await fetch(
                 `${API_URL}/saved-internships`,
                 {
-                    method: "POST",
 
-                    headers: getAuthHeaders(),
+                    method:
+                        "POST",
 
-                    body: JSON.stringify({
-                        user_id: userId,
-                        internship_id: id
-                    })
+                    headers:
+                        getAuthHeaders(),
+
+                    body:
+                        JSON.stringify(
+                            {
+
+                                user_id:
+                                    userId,
+
+                                internship_id:
+                                    Number(id)
+
+                            }
+                        )
+
                 }
             );
 
@@ -411,14 +613,18 @@ async function saveInternship(id) {
                 await response.json();
 
             throw new Error(
+
                 errorData.detail ||
+
                 "Failed to save internship"
+
             );
         }
 
 
         const data =
             await response.json();
+
 
         console.log(
             "Saved internship:",
@@ -431,6 +637,7 @@ async function saveInternship(id) {
                 "save-" + id
             );
 
+
         if (btn) {
 
             btn.innerText =
@@ -438,11 +645,13 @@ async function saveInternship(id) {
         }
 
 
-        await updateSavedCount(userId);
+        await updateSavedCount();
+
 
         alert(
             "⭐ Internship Saved Successfully!"
         );
+
 
     } catch (error) {
 
@@ -452,7 +661,8 @@ async function saveInternship(id) {
         );
 
         alert(
-            "❌ Unable to update saved internship."
+            "❌ " +
+            error.message
         );
     }
 }
@@ -460,7 +670,7 @@ async function saveInternship(id) {
 
 // ================= UPDATE APPLIED COUNT =================
 
-async function updateAppliedCount(userId) {
+async function updateAppliedCount() {
 
     try {
 
@@ -468,32 +678,29 @@ async function updateAppliedCount(userId) {
             await fetch(
                 `${API_URL}/applications`,
                 {
-                    headers: getAuthHeaders()
+
+                    headers:
+                        getAuthHeaders()
+
                 }
             );
 
+
         if (!response.ok) {
+
             return;
         }
+
 
         const applications =
             await response.json();
 
-        const userApplications =
-            applications.filter(
-                function (application) {
-
-                    return (
-                        Number(application.user_id) === userId
-                    );
-
-                }
-            );
 
         localStorage.setItem(
             "appliedCount",
-            userApplications.length
+            applications.length
         );
+
 
     } catch (error) {
 
@@ -507,7 +714,7 @@ async function updateAppliedCount(userId) {
 
 // ================= UPDATE SAVED COUNT =================
 
-async function updateSavedCount(userId) {
+async function updateSavedCount() {
 
     try {
 
@@ -515,32 +722,29 @@ async function updateSavedCount(userId) {
             await fetch(
                 `${API_URL}/saved-internships`,
                 {
-                    headers: getAuthHeaders()
+
+                    headers:
+                        getAuthHeaders()
+
                 }
             );
 
+
         if (!response.ok) {
+
             return;
         }
+
 
         const savedInternships =
             await response.json();
 
-        const userSavedInternships =
-            savedInternships.filter(
-                function (saved) {
-
-                    return (
-                        Number(saved.user_id) === userId
-                    );
-
-                }
-            );
 
         localStorage.setItem(
             "savedCount",
-            userSavedInternships.length
+            savedInternships.length
         );
+
 
     } catch (error) {
 
@@ -561,12 +765,15 @@ function setupSearch() {
             "searchInput"
         );
 
+
     const internshipCards =
         document.querySelectorAll(
             ".internship-card"
         );
 
+
     if (!searchInput) {
+
         return;
     }
 
@@ -577,7 +784,10 @@ function setupSearch() {
             searchText
                 .toLowerCase()
                 .trim()
-                .replace(/\s+/g, " ");
+                .replace(
+                    /\s+/g,
+                    " "
+                );
 
 
         internshipCards.forEach(
@@ -587,26 +797,35 @@ function setupSearch() {
                     card.textContent
                         .toLowerCase()
                         .trim()
-                        .replace(/\s+/g, " ");
+                        .replace(
+                            /\s+/g,
+                            " "
+                        );
 
 
                 if (
+
                     cardText.includes(
                         searchText
                     )
+
                 ) {
 
-                    card.style.display = "";
+                    card.style.display =
+                        "";
 
                 } else {
 
-                    card.style.display = "none";
+                    card.style.display =
+                        "none";
                 }
 
             }
         );
     }
 
+
+    // ================= MANUAL SEARCH =================
 
     searchInput.addEventListener(
         "input",
@@ -620,6 +839,8 @@ function setupSearch() {
     );
 
 
+    // ================= SEARCH FROM HOME PAGE =================
+
     const urlParams =
         new URLSearchParams(
             window.location.search
@@ -627,13 +848,16 @@ function setupSearch() {
 
 
     const searchQuery =
-        urlParams.get("search");
+        urlParams.get(
+            "search"
+        );
 
 
     if (searchQuery) {
 
         searchInput.value =
             searchQuery;
+
 
         applySearch(
             searchQuery
@@ -653,23 +877,12 @@ async function loadButtonStates() {
 
 
     if (!token) {
+
         return;
     }
 
 
     try {
-
-        const payload =
-            JSON.parse(
-                atob(
-                    token.split(".")[1]
-                )
-            );
-
-
-        const userId =
-            Number(payload.sub);
-
 
         // ================= GET APPLICATIONS =================
 
@@ -677,30 +890,23 @@ async function loadButtonStates() {
             await fetch(
                 `${API_URL}/applications`,
                 {
-                    headers: getAuthHeaders()
+
+                    headers:
+                        getAuthHeaders()
+
                 }
             );
 
 
-        if (applicationResponse.ok) {
+        if (
+            applicationResponse.ok
+        ) {
 
             const applications =
                 await applicationResponse.json();
 
 
-            const userApplications =
-                applications.filter(
-                    function (application) {
-
-                        return (
-                            Number(application.user_id) === userId
-                        );
-
-                    }
-                );
-
-
-            userApplications.forEach(
+            applications.forEach(
                 function (application) {
 
                     const btn =
@@ -722,7 +928,7 @@ async function loadButtonStates() {
 
             localStorage.setItem(
                 "appliedCount",
-                userApplications.length
+                applications.length
             );
         }
 
@@ -733,30 +939,23 @@ async function loadButtonStates() {
             await fetch(
                 `${API_URL}/saved-internships`,
                 {
-                    headers: getAuthHeaders()
+
+                    headers:
+                        getAuthHeaders()
+
                 }
             );
 
 
-        if (savedResponse.ok) {
+        if (
+            savedResponse.ok
+        ) {
 
             const savedInternships =
                 await savedResponse.json();
 
 
-            const userSavedInternships =
-                savedInternships.filter(
-                    function (saved) {
-
-                        return (
-                            Number(saved.user_id) === userId
-                        );
-
-                    }
-                );
-
-
-            userSavedInternships.forEach(
+            savedInternships.forEach(
                 function (saved) {
 
                     const btn =
@@ -778,7 +977,7 @@ async function loadButtonStates() {
 
             localStorage.setItem(
                 "savedCount",
-                userSavedInternships.length
+                savedInternships.length
             );
         }
 
