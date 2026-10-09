@@ -10,7 +10,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     env:
       DATABASE_URL: "sqlite:///./test.db"
       SECRET_KEY: "github-actions-test-secret"
@@ -43,7 +42,6 @@ jobs:
     needs: build-and-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
       - name: Trigger Render deployment
         env:
