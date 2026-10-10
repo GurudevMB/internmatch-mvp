@@ -276,7 +276,7 @@ def login(user: LoginRequest):
                 detail="Invalid email or password",
             )
 
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(timezone.UTC) + timedelta(
             minutes=ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
