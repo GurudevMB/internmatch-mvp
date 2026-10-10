@@ -57,6 +57,10 @@ class ApplicationResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ApplicationStatusUpdate(BaseModel):
+    status: str
+
+
 class SavedInternshipCreate(BaseModel):
     user_id: int
     internship_id: int

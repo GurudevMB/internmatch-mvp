@@ -14,6 +14,7 @@ from models import Application, Company, Internship, SavedInternship, User
 from schemas import (
     ApplicationCreate,
     ApplicationResponse,
+    ApplicationStatusUpdate,
     CompanyCreate,
     InternshipCreate,
     InternshipResponse,
@@ -688,6 +689,61 @@ def get_applications(
     finally:
         db.close()
 
+
+# ==================================================
+# UPDATE APPLICATION STATUS (ADMIN ONLY)
+# ==================================================
+
+@app.patch(
+    "/applications/{application_id}/status",
+    response_model=ApplicationResponse,
+)
+def update_application_status(
+    application_id: int,
+    status_update: ApplicationStatusUpdate,
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Only admins can update application status",
+        )
+
+    allowed_statuses = {
+        "Applied",
+        "Under Review",
+        "Shortlisted",
+        "Rejected",
+        "Accepted",
+    }
+
+    if status_update.status not in allowed_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid application status",
+        )
+
+    db = SessionLocal()
+
+    try:
+        application = db.query(Application).filter(
+            Application.application_id == application_id
+        ).first()
+
+        if application is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Application not found",
+            )
+
+        application.status = status_update.status
+        db.commit()
+        db.refresh(application)
+
+        return application
+
+    finally:
+        db.close()
 
 # ==================================================
 # WITHDRAW APPLICATION
