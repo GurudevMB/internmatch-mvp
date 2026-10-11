@@ -1,29 +1,122 @@
-﻿<!DOCTYPE html>
+﻿@'
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Company Signup | InternMatch</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/login.css">
+<style>
+.company-signup-page {
+    min-height: 100vh;
+    margin: 0;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #eef2ff, #dbeafe);
+    font-family: Arial, sans-serif;
+}
+.company-signup-page .company-card {
+    width: 100%;
+    max-width: 480px;
+    box-sizing: border-box;
+    padding: 32px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 15px 45px rgba(15, 23, 42, .14);
+}
+.company-card h2 {
+    margin: 0 0 24px;
+    text-align: center;
+    color: #172554;
+    font-size: 28px;
+}
+.company-card label {
+    display: block;
+    margin: 14px 0 7px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+.company-card input,
+.company-card textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+}
+.company-card textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+.company-card input:focus,
+.company-card textarea:focus {
+    outline: 2px solid #818cf8;
+    border-color: #4f46e5;
+}
+.company-card button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    border: 0;
+    border-radius: 8px;
+    background: #4f46e5;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.company-card button:hover {
+    background: #3730a3;
+}
+.company-card .company-login-link {
+    margin-top: 20px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}
+.company-card a {
+    color: #4f46e5;
+    font-weight: 600;
+    text-decoration: none;
+}
+.company-card a:hover {
+    text-decoration: underline;
+}
+</style>
 </head>
-<body>
-<main class="login-card">
+<body class="company-signup-page">
+<main class="company-card">
 <h2>Register Your Company</h2>
 <form id="companySignupForm">
-<label>Company Name</label>
+<label for="companyName">Company Name</label>
 <input id="companyName" required maxlength="150">
-<label>Email</label>
+
+<label for="companyEmail">Email</label>
 <input id="companyEmail" type="email" required>
-<label>Password (minimum 8 characters)</label>
+
+<label for="companyPassword">Password (minimum 8 characters)</label>
 <input id="companyPassword" type="password" minlength="8" required>
-<label>Location</label>
+
+<label for="companyLocation">Location</label>
 <input id="companyLocation">
-<label>Description</label>
+
+<label for="companyDescription">Description</label>
 <textarea id="companyDescription"></textarea>
+
 <button type="submit">Register Company</button>
 </form>
-<p>Already registered? <a href="login.html">Login</a></p>
+<p class="company-login-link">Already registered? <a href="login.html">Login</a></p>
 </main>
+
 <script>
 const API = "https://internmatch-mvp.onrender.com";
 document.getElementById("companySignupForm").addEventListener("submit", async e => {
@@ -38,14 +131,16 @@ document.getElementById("companySignupForm").addEventListener("submit", async e 
     try {
         const r = await fetch(`${API}/company-register`, {
             method: "POST",
-            headers: {"Content-Type":"application/json"},
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(body)
         });
         const d = await r.json();
         if (!r.ok) throw new Error(d.detail || "Registration failed");
         alert("Company registered! Please login.");
         location.href = "login.html";
-    } catch (err) { alert(err.message || "Server connection failed"); }
+    } catch (err) {
+        alert(err.message || "Server connection failed");
+    }
 });
 </script>
 </body>
