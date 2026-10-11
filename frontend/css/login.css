@@ -244,3 +244,22 @@
         transform: none;
     }
 }
+
+.signup-text {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.signup-text a {
+    color: #6366f1;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.signup-text a:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
