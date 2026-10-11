@@ -4,3 +4,20 @@ __pycache__/
 *.pyc
 .env
 *.env
+
+
+# Local databases
+test.db
+backend/test.db
+*.db-journal
+
+# Python test and lint caches
+.pytest_cache/
+.ruff_cache/
+**/__pycache__/
+*.py[cod]
+
+# Environment secrets
+.env
+.env.*
+!.env.example

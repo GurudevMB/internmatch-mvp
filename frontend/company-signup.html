@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Company Signup | InternMatch</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="login-card">
+<h2>Register Your Company</h2>
+<form id="companySignupForm">
+<label>Company Name</label>
+<input id="companyName" required maxlength="150">
+<label>Email</label>
+<input id="companyEmail" type="email" required>
+<label>Password (minimum 8 characters)</label>
+<input id="companyPassword" type="password" minlength="8" required>
+<label>Location</label>
+<input id="companyLocation">
+<label>Description</label>
+<textarea id="companyDescription"></textarea>
+<button type="submit">Register Company</button>
+</form>
+<p>Already registered? <a href="login.html">Login</a></p>
+</main>
+<script>
+const API = "https://internmatch-mvp.onrender.com";
+document.getElementById("companySignupForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const body = {
+        company_name: document.getElementById("companyName").value.trim(),
+        email: document.getElementById("companyEmail").value.trim().toLowerCase(),
+        password: document.getElementById("companyPassword").value,
+        location: document.getElementById("companyLocation").value.trim() || null,
+        description: document.getElementById("companyDescription").value.trim() || null
+    };
+    try {
+        const r = await fetch(`${API}/company-register`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(body)
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail || "Registration failed");
+        alert("Company registered! Please login.");
+        location.href = "login.html";
+    } catch (err) { alert(err.message || "Server connection failed"); }
+});
+</script>
+</body>
+</html>

@@ -1,161 +1,48 @@
-// ================= LOGIN =================
+﻿const API_URL = "https://internmatch-mvp.onrender.com";
 
-const loginForm = document.getElementById("loginForm");
+document.getElementById("loginForm")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-const API_URL = "https://internmatch-mvp.onrender.com";
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const password = document.getElementById("password").value;
 
-if (loginForm) {
+    try {
+        let response = await fetch(`${API_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
 
-    loginForm.addEventListener("submit", async function (event) {
+        let data = await response.json();
 
-        event.preventDefault();
+        if (!response.ok) {
+            response = await fetch(`${API_URL}/company-login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            data = await response.json();
+        }
 
-        const email = document
-            .getElementById("email")
-            .value
-            .trim()
-            .toLowerCase();
-
-        const password = document
-            .getElementById("password")
-            .value;
-
-        if (email === "" || password === "") {
-
-            alert("Please fill all fields.");
-
+        if (!response.ok) {
+            alert(data.detail || "Login failed");
             return;
         }
 
-        try {
+        localStorage.setItem("accessToken", data.access_token);
+        localStorage.setItem("tokenType", data.token_type || "bearer");
+        localStorage.setItem("userRole", data.role);
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userEmail", email);
 
-            const response = await fetch(
-                `${API_URL}/login`,
-                {
-
-                    method: "POST",
-
-                    headers: {
-
-                        "Content-Type": "application/json",
-
-                        "Accept": "application/json"
-
-                    },
-
-                    body: JSON.stringify({
-
-                        email: email,
-
-                        password: password
-
-                    })
-
-                }
-            );
-
-            let data;
-
-            try {
-
-                data = await response.json();
-
-            } catch {
-
-                throw new Error(
-                    "Invalid response from backend"
-                );
-
-            }
-
-            if (!response.ok) {
-
-                alert(
-                    data.detail ||
-                    "❌ Invalid email or password."
-                );
-
-                return;
-
-            }
-
-
-            // ================= SAVE LOGIN DATA =================
-
-            localStorage.setItem(
-                "accessToken",
-                data.access_token
-            );
-
-            localStorage.setItem(
-                "tokenType",
-                data.token_type || "bearer"
-            );
-
-            localStorage.setItem(
-                "userRole",
-                data.role || ""
-            );
-
-            localStorage.setItem(
-                "isLoggedIn",
-                "true"
-            );
-
-            localStorage.setItem(
-                "userEmail",
-                email
-            );
-
-
-            // ================= ROLE BASED REDIRECT =================
-
-            if (data.role === "admin") {
-
-                alert(
-                    "✅ Admin Login Successful!"
-                );
-
-                window.location.href =
-                    "admin.html";
-
-            }
-
-            else if (data.role === "student") {
-
-                alert(
-                    "✅ Login Successful! Welcome to InternMatch."
-                );
-
-                window.location.href =
-                    "dashboard.html";
-
-            }
-
-            else {
-
-                alert(
-                    "❌ Unknown user role."
-                );
-
-                localStorage.clear();
-
-            }
-
-
-        } catch (error) {
-
-            console.error(
-                "Login error:",
-                error
-            );
-
-            alert(
-                "❌ Unable to connect to backend. Make sure FastAPI is running on port 8000."
-            );
-
+        if (data.role === "admin") {
+            location.href = "admin.html";
+        } else if (data.role === "company") {
+            location.href = "company-dashboard.html";
+        } else {
+            location.href = "dashboard.html";
         }
-
-    });
-
-}
+    } catch {
+        alert("Server connection failed. Try again.");
+    }
+});

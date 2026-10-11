@@ -1,0 +1,156 @@
+﻿@'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Company Dashboard | InternMatch</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="login-card" style="max-width:900px;margin:40px auto;padding:24px">
+<h1>Company Dashboard</h1>
+<p id="companyInfo">Loading company details...</p>
+<p id="message"></p>
+<button id="logout" type="button">Logout</button>
+
+<h2>Post Internship</h2>
+<form id="internshipForm">
+<label>Title</label><input id="title" required>
+<label>Description</label><textarea id="description"></textarea>
+<label>Location</label><input id="location">
+<label>Duration</label><input id="duration">
+<label>Stipend</label><input id="stipend">
+<label>Required Skills</label><input id="skills">
+<button type="submit">Post Internship</button>
+</form>
+
+<h2>Your Internships</h2>
+<div id="internships">Loading...</div>
+<h2>Applicants</h2>
+<div id="applicants">Loading...</div>
+</main>
+
+<script>
+const API = "https://internmatch-mvp.onrender.com";
+const token = localStorage.getItem("accessToken");
+const role = localStorage.getItem("userRole");
+const headers = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+});
+const message = text => document.getElementById("message").textContent = text;
+
+if (!token || role !== "company") location.href = "login.html";
+
+document.getElementById("logout").onclick = () => {
+    ["accessToken","tokenType","userRole","isLoggedIn","userEmail"]
+        .forEach(key => localStorage.removeItem(key));
+    location.href = "login.html";
+};
+
+async function loadCompany() {
+    const r = await fetch(`${API}/company/me`, {headers: headers()});
+    if (!r.ok) throw Error("Could not load company profile.");
+    const c = await r.json();
+    document.getElementById("companyInfo").textContent =
+        `${c.company_name} — ${c.email}`;
+}
+
+async function loadInternships() {
+    const r = await fetch(`${API}/company/internships`, {headers: headers()});
+    if (!r.ok) throw Error("Could not load internships.");
+    const items = await r.json();
+    const box = document.getElementById("internships");
+    box.replaceChildren();
+
+    if (!items.length) {
+        box.textContent = "No internships posted yet.";
+        return;
+    }
+
+    items.forEach(item => {
+        const card = document.createElement("section");
+        const title = document.createElement("h3");
+        title.textContent = item.title;
+        const desc = document.createElement("p");
+        desc.textContent = item.description || "";
+        const details = document.createElement("p");
+        details.textContent = [
+            item.location, item.duration, item.stipend, item.skills_required
+        ].filter(Boolean).join(" | ");
+        card.append(title, desc, details);
+        box.append(card);
+    });
+}
+
+async function loadApplicants() {
+    const r = await fetch(`${API}/company/applications`, {headers: headers()});
+    if (!r.ok) throw Error("Could not load applicants.");
+    const items = await r.json();
+    const box = document.getElementById("applicants");
+    box.replaceChildren();
+
+    if (!items.length) {
+        box.textContent = "No applicants yet.";
+        return;
+    }
+
+    items.forEach(item => {
+        const card = document.createElement("section");
+        const title = document.createElement("h3");
+        title.textContent = item.internship_title;
+        const student = document.createElement("p");
+        student.textContent = `${item.student_name} (${item.student_email})`;
+        const status = document.createElement("p");
+        status.textContent = `Status: ${item.status}`;
+        card.append(title, student, status);
+        box.append(card);
+    });
+}
+
+document.getElementById("internshipForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const payload = {
+        title: document.getElementById("title").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        location: document.getElementById("location").value.trim(),
+        duration: document.getElementById("duration").value.trim(),
+        stipend: document.getElementById("stipend").value.trim(),
+        skills_required: document.getElementById("skills").value.trim()
+    };
+
+    try {
+        const r = await fetch(`${API}/company/internships`, {
+            method: "POST",
+            headers: headers(),
+            body: JSON.stringify(payload)
+        });
+        const data = await r.json();
+
+        if (!r.ok) {
+            message(data.detail || "Could not post internship.");
+            return;
+        }
+
+        e.target.reset();
+        message("Internship posted successfully!");
+        await loadInternships();
+    } catch {
+        message("Server connection failed. Try again.");
+    }
+});
+
+(async () => {
+    if (!token || role !== "company") return;
+    try {
+        await loadCompany();
+        await Promise.all([loadInternships(), loadApplicants()]);
+    } catch (e) {
+        message(e.message);
+    }
+})();
+</script>
+</body>
+</html>

@@ -154,7 +154,31 @@ def get_current_user(
 
     return user
 
+def get_current_company(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
+        if payload.get("role") != "company":
+            raise HTTPException(status_code=403, detail="Company access required")
+        company_id = int(payload["sub"])
+    except (JWTError, ValueError, KeyError):
+        raise HTTPException(status_code=401, detail="Invalid company token")
 
+    db = SessionLocal()
+    try:
+        company = db.query(Company).filter(
+            Company.company_id == company_id
+        ).first()
+        if not company:
+            raise HTTPException(status_code=401, detail="Company not found")
+        return company
+    finally:
+        db.close()
 # ==================================================
 # HOME
 # ==================================================
@@ -328,6 +352,74 @@ def login(user: LoginRequest):
         db.close()
 
 
+@app.post("/company-register")
+def register_company(company: CompanyCreate):
+    db = SessionLocal()
+    try:
+        if db.query(User).filter(User.email == company.email).first():
+            raise HTTPException(status_code=409, detail="Email already registered")
+
+        if db.query(Company).filter(Company.email == company.email).first():
+            raise HTTPException(status_code=409, detail="Email already registered")
+
+        new_company = Company(
+            company_name=company.company_name,
+            email=company.email,
+            password=pwd_context.hash(company.password),
+            location=company.location,
+            description=company.description,
+        )
+        db.add(new_company)
+        db.commit()
+        db.refresh(new_company)
+
+        return {
+            "company_id": new_company.company_id,
+            "company_name": new_company.company_name,
+            "email": new_company.email,
+            "role": "company",
+        }
+    finally:
+        db.close()
+
+
+@app.post("/company-login")
+def company_login(user: LoginRequest):
+    db = SessionLocal()
+    try:
+        company = db.query(Company).filter(
+            Company.email == user.email
+        ).first()
+
+        if not company or not pwd_context.verify(
+            user.password, company.password
+        ):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid email or password",
+            )
+
+        token = jwt.encode(
+            {
+                "sub": str(company.company_id),
+                "email": company.email,
+                "role": "company",
+                "exp": datetime.now(UTC) + timedelta(
+                    minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+                ),
+            },
+            SECRET_KEY,
+            algorithm=ALGORITHM,
+        )
+
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "role": "company",
+        }
+    finally:
+        db.close()
+
 # ==================================================
 # CURRENT USER
 # ==================================================
@@ -418,7 +510,86 @@ def create_company(
     finally:
         db.close()
 
+@app.get("/company/me")
+def company_profile(
+    company: Company = Depends(get_current_company),
+):
+    return {
+        "company_id": company.company_id,
+        "company_name": company.company_name,
+        "email": company.email,
+        "location": company.location,
+        "description": company.description,
+    }
 
+
+@app.get("/company/internships")
+def company_internships(
+    company: Company = Depends(get_current_company),
+):
+    db = SessionLocal()
+    try:
+        return db.query(Internship).filter(
+            Internship.company_id == company.company_id
+        ).all()
+    finally:
+        db.close()
+
+@app.post("/company/internships")
+def create_company_internship(
+    internship: InternshipCreate,
+    company: Company = Depends(get_current_company),
+):
+    db = SessionLocal()
+    try:
+        new_internship = Internship(
+            company_id=company.company_id,
+            title=internship.title,
+            description=internship.description,
+            location=internship.location,
+            duration=internship.duration,
+            stipend=internship.stipend,
+            skills_required=internship.skills_required,
+        )
+        db.add(new_internship)
+        db.commit()
+        db.refresh(new_internship)
+        return new_internship
+    finally:
+        db.close()
+
+@app.get("/company/applications")
+def get_company_applications(
+    company: Company = Depends(get_current_company),
+):
+    db = SessionLocal()
+    try:
+        results = (
+            db.query(Application, User, Internship)
+            .join(User, Application.user_id == User.user_id)
+            .join(
+                Internship,
+                Application.internship_id == Internship.internship_id,
+            )
+            .filter(Internship.company_id == company.company_id)
+            .all()
+        )
+
+        return [
+            {
+                "application_id": app.application_id,
+                "student_name": user.name,
+                "student_email": user.email,
+                "internship_id": internship.internship_id,
+                "internship_title": internship.title,
+                "status": app.status,
+            }
+            for app, user, internship in results
+        ]
+    finally:
+        db.close()
+
+        
 # ==================================================
 # INTERNSHIPS
 # ==================================================
