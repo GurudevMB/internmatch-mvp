@@ -1,21 +1,38 @@
-from pydantic import BaseModel
+
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserCreate(BaseModel):
-    name: str
-    email: str
-    password: str
-    role: str
+    name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=72)
+    role: Literal["student"] = "student"
 
 
 class CompanyCreate(BaseModel):
-    company_name: str
-    email: str
-    password: str
+    company_name: str = Field(min_length=1, max_length=150)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=72)
     location: str | None = None
     description: str | None = None
 
+
 class InternshipCreate(BaseModel):
+    company_id: int
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = None
+    location: str | None = None
+    duration: str | None = None
+    stipend: str | None = None
+    skills_required: str | None = None
+
+
+class InternshipResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    internship_id: int
     company_id: int
     title: str
     description: str | None = None
@@ -25,23 +42,10 @@ class InternshipCreate(BaseModel):
     skills_required: str | None = None
 
 
-
-
-class InternshipResponse(BaseModel):
-    internship_id: int
-    company_id: int
-    title: str
-    description: str
-    location: str
-    duration: str
-    stipend: str
-    skills_required: str
-
-    class Config:
-        from_attributes = True
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
+
 
 class ApplicationCreate(BaseModel):
     user_id: int
@@ -49,13 +53,13 @@ class ApplicationCreate(BaseModel):
 
 
 class ApplicationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     application_id: int
     user_id: int
     internship_id: int
     status: str
 
-    class Config:
-        from_attributes = True
 
 class ApplicationStatusUpdate(BaseModel):
     status: str
@@ -67,9 +71,8 @@ class SavedInternshipCreate(BaseModel):
 
 
 class SavedInternshipResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     saved_id: int
     user_id: int
     internship_id: int
-
-    class Config:
-        from_attributes = True

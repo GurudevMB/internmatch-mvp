@@ -7,3 +7,5 @@ passlib[bcrypt]
 python-dotenv
 pytest
 httpx
+httpx2
+email-validator

@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -180,16 +180,34 @@ def health():
 # USERS
 # ==================================================
 
+
 @app.get("/users")
-def get_users():
+def get_users(
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
     db = SessionLocal()
 
     try:
         users = db.query(User).all()
-        return users
 
+        return [
+            {
+                "user_id": user.user_id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+            }
+            for user in users
+        ]
     finally:
         db.close()
+
 
 
 @app.post("/users")
@@ -215,7 +233,7 @@ def create_user(user: UserCreate):
             name=user.name,
             email=user.email,
             password=hashed_password,
-            role=user.role,
+            role="student",
         )
 
         db.add(new_user)
@@ -276,7 +294,7 @@ def login(user: LoginRequest):
                 detail="Invalid email or password",
             )
 
-        expire = datetime.now(timezone.UTC) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
