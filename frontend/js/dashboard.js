@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://internmatch-mvp.onrender.com";
 
 
 // ================= AUTH HEADERS =================
@@ -274,9 +274,81 @@ async function loadAvailableCount() {
     }
 }
 
+ 
+// ================= MY APPLICATIONS =================
+
+async function loadMyApplications() {
+    const container = document.getElementById("myApplicationsList");
+
+    if (!container) return;
+
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+        container.innerHTML = "<p>Please log in to view your applications.</p>";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/applications`, {
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to load applications");
+        }
+
+        const applications = await response.json();
+
+        if (applications.length === 0) {
+            container.innerHTML = "<p>You haven't applied for any internships yet.</p>";
+            return;
+        }
+
+        const internshipsResponse = await fetch(`${API_URL}/internships`);
+
+        if (!internshipsResponse.ok) {
+            throw new Error("Failed to load internship details");
+        }
+
+        const internships = await internshipsResponse.json();
+
+        container.innerHTML = applications.map(application => {
+            const internship = internships.find(
+                item => Number(item.internship_id) === Number(application.internship_id)
+            );
+
+            const title = internship
+                ? internship.title
+                : `Internship #${application.internship_id}`;
+
+            const status = application.status || "Applied";
+
+            return `
+                <article class="application-card">
+                    <h3>${escapeApplicationText(title)}</h3>
+                    <p>Application ID: ${application.application_id}</p>
+                    <p>Status: <strong>${escapeApplicationText(status)}</strong></p>
+                </article>
+            `;
+        }).join("");
+
+    } catch (error) {
+        console.error("Error loading applications:", error);
+        container.innerHTML = "<p>Unable to load applications. Please refresh the page.</p>";
+    }
+}
+
+function escapeApplicationText(value) {
+    const element = document.createElement("span");
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+}
+
 
 // ================= PAGE LOAD =================
 
 loadAvailableCount();
 loadAppliedCount();
 loadSavedCount();
+loadMyApplications();
