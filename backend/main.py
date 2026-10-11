@@ -97,6 +97,8 @@ app.add_middleware(
     allow_origins=[
         "http://127.0.0.1:5500",
         "http://localhost:5500",
+        "https://internmatch-mvp-gamma.vercel.app",
+        "https://internmatch-mvp-git-main-blacktom15s-projects.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
